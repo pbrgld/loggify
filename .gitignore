@@ -1,6 +1,9 @@
 # dependencies (bun install)
 node_modules
 
+# vs code settings
+.vscode/
+
 # output
 out
 dist

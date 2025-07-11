@@ -1,5 +1,17 @@
 # @pbrgld/Loggify
 
+> ⚠️ **Project Status: Early Development** ⚠️
+>
+> 🚧 **Warning:** Loggify is currently in an **early development stage**.  
+> The version on the `main` branch is considered **unstable** and may change significantly.
+>
+> 🧪 Expect breaking changes as features are added and the API evolves.
+>
+> 🙌 Your feedback, bug reports, and contributions are highly appreciated!  
+> Help shape Loggify into a reliable and performant logging tool.
+>
+> ---
+
 Loggify is a fast, zero-dependency logging library built for modern JavaScript and TypeScript runtimes – especially fun with Bun.js!
 
 Designed for developers who want more expressive and structured logs without sacrificing performance, loggify brings a fresh logging experience using styled output, emoji-enhanced messages, and flushable contextual logs that keep related information together.
