@@ -9,6 +9,10 @@
     "email": "paul@bergold.online",
     "url": "https://github.com/pbrgld"
   },
+  "repository": {
+    "type": "github",
+    "url": "git+https://github.com/pbrgld/loggify.git"
+  },
   "keywords": [
     "loggify",
     "logger",
