@@ -65,7 +65,7 @@ In the most simplest way, use the console method and provide a string as message
 loggify.console("Hello world", "rocket");
 ```
 
-![Output: simple console log](documentation/caseSimpleLog.png)
+![Output: simple console log](https://raw.githubusercontent.com/pbrgld/loggify/main/documentation/caseSimpleLog.png)
 
 > 🧠 **Note:** Constructor Defaults & Auto-Configuration
 >
@@ -99,7 +99,7 @@ const loggify: Loggify = new Loggify({
 });
 ```
 
-![Output: removed caller information and memory usage via constructor](documentation/constructorNoMeMCaller.png)
+![Output: removed caller information and memory usage via constructor](https://raw.githubusercontent.com/pbrgld/loggify/main/documentation/constructorNoMemCaller.png)
 
 > 👆 **Hint:** This is an example, how to set the parameters in the constructor to remove caller information and memory usage and log the timestamp in date-time mode.
 
@@ -130,7 +130,7 @@ loggify.console(
 );
 ```
 
-![Output: Color, style and emoji logging](documentation/caseColorStyleEmoji.png)
+![Output: Color, style and emoji logging](https://raw.githubusercontent.com/pbrgld/loggify/main/documentation/caseColorStyleEmoji.png)
 
 This feature gives you powerful control over the visual appearance of your logs — without needing external dependencies or manual ANSI codes.
 
@@ -150,7 +150,7 @@ This makes it easier to inspect the state of your application without losing tra
 loggify.console("Hello world", "rocket", {}, object);
 ```
 
-![Output: object logging](documentation/caseObject.png)
+![Output: object logging](https://raw.githubusercontent.com/pbrgld/loggify/main/documentation/caseObject.png)
 
 ### Log example for time measuring
 
@@ -181,7 +181,7 @@ loggify.console("Hello world", "metrics", {
 
 This makes it simple to track the performance of asynchronous operations and benchmark critical sections of your application — without manual formatting or external tools.
 
-![Output: metrics](documentation/caseMetrics.png)
+![Output: metrics](https://raw.githubusercontent.com/pbrgld/loggify/main/documentation/caseMetrics.png)
 
 > 🧠 **Advanced notice:** You can either pass the performance counter _start_ and end _metrics_ via the metrics object or alternatively you can pass milliseconds to the _duration_ parameter if you only have a result value.
 
@@ -234,7 +234,7 @@ loggify.console("Demo function end", "finished", {
 loggify.flush(uniqueContextId);
 ```
 
-![Output: context based logging](documentation/caseContext.png)
+![Output: context based logging](https://raw.githubusercontent.com/pbrgld/loggify/main/documentation/caseContext.png)
 
 ## 🧭 Project Philosophy & Community Focus
 
