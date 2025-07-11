@@ -1,5 +1,12 @@
 # @pbrgld/Loggify
 
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript)
+![License](https://img.shields.io/npm/l/loggify?style=flat-square)
+![Bun.js](https://img.shields.io/badge/Bun.js-Compatible-black?style=flat-square&logo=bun)
+![npm](https://img.shields.io/npm/v/loggify?style=flat-square)
+![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-green?style=flat-square&logo=node.js)
+![npm](https://img.shields.io/npm/dt/loggify?style=flat-square)
+
 > ⚠️ **Project Status: Early Development** ⚠️
 >
 > 🚧 **Warning:** Loggify is currently in an **early development stage**.  
