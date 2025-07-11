@@ -21,6 +21,8 @@
 >
 > ---
 
+![Loggify Logo](https://raw.githubusercontent.com/pbrgld/loggify/main/documentation/loggify.png)
+
 Loggify is a fast, zero-dependency logging library built for modern JavaScript and TypeScript runtimes – especially fun with Bun.js!
 
 Designed for developers who want more expressive and structured logs without sacrificing performance, loggify brings a fresh logging experience using styled output, emoji-enhanced messages, and flushable contextual logs that keep related information together.
