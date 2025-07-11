@@ -1,0 +1,10 @@
+documentation/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.psd
+*.svg
+*.tiff
+*.bmp
