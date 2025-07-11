@@ -9,7 +9,8 @@ import util from 'util';
 /**
  * Todo section
  */
-//TODO: Stuff in NPM Package
+//TODO: Implement a method or extend option to .flush() - clearing the logs from memory but not send to console
+//TODO: Append to file? Not sure if this is needed (Wait for community to request)
 
 /**
  * Console class

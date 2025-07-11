@@ -1,0 +1,12 @@
+.vscode/
+bun.locktsconfig.json
+documentation/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.psd
+*.svg
+*.tiff
+*.bmp
