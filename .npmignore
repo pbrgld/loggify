@@ -1,3 +1,5 @@
+.vscode/
+bun.locktsconfig.json
 documentation/
 *.png
 *.jpg
