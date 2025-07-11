@@ -1,6 +1,6 @@
 {
   "name": "@pbrgld/loggify",
-  "displayName": "A lightweight, dependency-free logging library for Bun.js and Node.js – featuring emoji support, styled output, contextual logging, and high-performance stdout logging.",
+  "description": "A lightweight, dependency-free logging library for Bun.js and Node.js – featuring emoji support, styled output, contextual logging, and high-performance stdout logging.",
   "license": "MIT",
   "version": "0.1.7",
   "module": "index.ts",
