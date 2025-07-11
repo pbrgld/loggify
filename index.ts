@@ -11,6 +11,10 @@ import util from 'util';
  */
 //TODO: Implement a method or extend option to .flush() - clearing the logs from memory but not send to console
 //TODO: Append to file? Not sure if this is needed (Wait for community to request)
+//TODO: Prepare everything to make everything v1.0.0 ready
+//TODO: Optimize Class name and version, remove from class and see if can be used from package.json
+//TODO: Add init silent option to not log any class logging info, if even needed
+//TODO: Add documentation for set log level
 
 /**
  * Console class
