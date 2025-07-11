@@ -21,7 +21,6 @@
     "ANSI"
   ],
   "type": "module",
-  "private": true,
   "scripts": {
     "dev": "bun --bun --watch --no-clear-screen run ./index.ts"
   },
