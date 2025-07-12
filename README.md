@@ -114,6 +114,24 @@ const loggify: Loggify = new Loggify({
 
 > 👆 **Hint:** This is an example, how to set the parameters in the constructor to remove caller information and memory usage and log the timestamp in date-time mode.
 
+#### 🔕 Init class in silent mode
+
+By default, Loggify prints informative initialization details when a new instance is created. This includes:
+
+- The logger’s internal setup status
+- The name of the class
+- The currently installed version of Loggify
+
+This startup log provides transparency about the logging environment and is especially useful during development or debugging.
+
+However, if you prefer a completely silent initialization, you can disable this behavior using the initSilent parameter:
+
+```ts
+const loggify: Loggify = new Loggify({ initSilent: true });
+```
+
+![Output: removed caller information and memory usage via constructor](https://raw.githubusercontent.com/pbrgld/loggify/main/documentation/constructorinitSilent.png)
+
 ### Text coloring and styling and using emojis
 
 **Loggify** supports inline styling and emoji enhancements directly within your message strings, using a simple and expressive tag syntax inspired by HTML.
@@ -272,13 +290,24 @@ The following improvements are planned to make Loggify even more powerful and fl
 
 #### ✅ Planned Features
 
-1. **🌐 Browser Support**  
-   Currently, Loggify is optimized for **Node.js** and **Bun.js** environments.  
-   Future versions will bring compatibility with modern browsers and frontend workflows.
+- **🌐 Browser Support**  
+  Currently, Loggify is optimized for **Node.js** and **Bun.js** environments.  
+  Future versions will bring compatibility with modern browsers and frontend workflows.
 
-2. **🎨 Custom Style Templates (Tag-Based)**  
-   Instead of manually setting styles like `color` or `bold`, you’ll be able to use **semantic tags** like `[style:file]`, `[style:warning]`, etc.  
-   These tags will map to custom-defined style presets – making your logging both cleaner and more expressive.
+- **🎨 Custom Style Templates (Tag-Based)**  
+  Instead of manually setting styles like `color` or `bold`, you’ll be able to use **semantic tags** like `[style:file]`, `[style:warning]`, etc.  
+  These tags will map to custom-defined style presets – making your logging both cleaner and more expressive.
+
+- **📊 Native Grafana Loki Support (Zero-Dependency)**
+
+  Future versions of **Loggify** will support native integration with Grafana Loki for log aggregation and monitoring – without introducing any external dependencies.
+
+  This feature will use Loki’s REST-based /loki/api/v1/push endpoint directly, enabling developers to stream structured logs to a local or remote Loki instance using native HTTP calls (fetch, https.request, etc.).
+
+  This will allow seamless integration with your Loki + Promtail and in future Alloy + Grafana stack while keeping your project lean and dependency-free.
+
+- **🛰️ Native AWS CloudWatch Integration (planned)**
+  Support for a native integration with AWS CloudWatch is on the roadmap. The goal is to enable zero-dependency log forwarding by directly interacting with the AWS CloudWatch Logs API. This feature will allow users to stream logs to the cloud without relying on external packages, offering high performance and full control while staying aligned with Loggify’s lightweight architecture.
 
 ## 📝 License
 
