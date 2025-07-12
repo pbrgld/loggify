@@ -5,6 +5,7 @@
  */
 import { basename } from "path";
 import util from 'util';
+import { name, version } from './package.json';
 
 /**
  * Todo section
@@ -12,19 +13,14 @@ import util from 'util';
 //TODO: Prepare everything to make everything v1.0.0 ready
 //TODO: Implement a method or extend option to .flush() - clearing the logs from memory but not send to console
 //TODO: Append to file? Not sure if this is needed (Wait for community to request)
-//TODO: Optimize Class name and version, remove from class and see if can be used from package.json
-//TODO: Add init silent option to not log any class logging info, if even needed
 //TODO: Add documentation for set log level
+//TODO: Add documentation for define what should be logged in which log level
+//TODO: Work on Roadmap - Focus on GrafanaLoki integration
 
 /**
  * Console class
  */
 export default class Loggify {
-    private className: string = 'Console';
-    private versionMajor: number = 0;
-    private versionMinor: number = 1;
-    private versionPatch: number = 0;
-    private version: string = `${this.versionMajor}.${this.versionMinor}.${this.versionPatch}`;
     private logLevel: LogLevel = 'full';
     private logTimestamp: boolean = true;
     private logTimestampType: string = 'time';
@@ -83,14 +79,22 @@ export default class Loggify {
         if (typeof options?.logMemoryUsage === 'boolean') this.logMemory = options.logMemoryUsage;
 
         // Output (info)
-        this.console(`Class ${this.className} v${this.version} loaded from [ansi:cyan]${basename(__filename)}[ansi:reset]`, `init`, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 1 });
-        this.console(`Log level: [ansi:magenta]${this.logLevel}[ansi:reset]`, undefined, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 1 });
-        this.console(`Log timestamp: [ansi:magenta]${this.logTimestamp}[ansi:reset]`, undefined, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 1 });
-        if (this.logTimestamp) this.console(`Timestamp format: [ansi:magenta]${this.logTimestampType}[ansi:reset]`, undefined, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 1 });
-        this.console(`Log type as emojis: [ansi:magenta]${this.typeTagUseEmoji}[ansi:reset]`, undefined, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 1 });
-        this.console(`Log caller information: [ansi:magenta]${this.logCallerInformation}[ansi:reset]`, undefined, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 1 });
-        this.console(`Default caller information level: [ansi:magenta]${this.logCallerCallStackLevel}[ansi:reset]`, undefined, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 1 });
-        this.console(`Log memory usage: [ansi:magenta]${this.logMemory}[ansi:reset]`, undefined, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 1 });
+        if (options?.initSilent !== true) {
+            this.logInit();
+        }
+
+    }
+
+    /** Logs the current initialization and setup of Loggify */
+    logInit() {
+        this.console(`╭ Loggify (${name}) v${version} loaded from [ansi:cyan]${basename(__filename)}[ansi:reset]`, `init`, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 2 });
+        this.console(`├─── Log level: [ansi:magenta]${this.logLevel}[ansi:reset]`, undefined, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 2 });
+        this.console(`├─── Log timestamp: [ansi:magenta]${this.logTimestamp}[ansi:reset]`, undefined, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 2 });
+        if (this.logTimestamp) this.console(`├─── Timestamp format: [ansi:magenta]${this.logTimestampType}[ansi:reset]`, undefined, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 2 });
+        this.console(`├─── Log type as emojis: [ansi:magenta]${this.typeTagUseEmoji}[ansi:reset]`, undefined, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 2 });
+        this.console(`├─── Log caller information: [ansi:magenta]${this.logCallerInformation}[ansi:reset]`, undefined, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 2 });
+        this.console(`├─── Default caller information level: [ansi:magenta]${this.logCallerCallStackLevel}[ansi:reset]`, undefined, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 2 });
+        this.console(`╰─── Log memory usage: [ansi:magenta]${this.logMemory}[ansi:reset]`, undefined, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 2 });
     }
 
     /** Method to set/change the log level */
@@ -101,13 +105,13 @@ export default class Loggify {
         // Log Level has been changed
         if (currentLogLevel != logLevel) {
             this.logLevel = logLevel;
-            this.console(`Class ${this.className} @LogLevel: "[ansi:brightBlue]${currentLogLevel}[ansi:reset]" => "[ansi:brightGreen]${this.logLevel}[ansi:reset]"`, 'info', { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 1 });
+            this.console(`${name} @LogLevel: "[ansi:brightBlue]${currentLogLevel}[ansi:reset]" => "[ansi:brightGreen]${this.logLevel}[ansi:reset]"`, 'info', { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 1 });
             return true;
         }
 
         // No change required - new value equals current value
         else {
-            this.console(`Class ${this.className} @LogLevel: already set to "${logLevel}"`, 'warn', { logLevel: 'minimal', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 1 });
+            this.console(`${name} @LogLevel: already set to "${logLevel}"`, 'warn', { logLevel: 'minimal', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 1 });
             return false;
         }
     }
@@ -635,6 +639,7 @@ type LogType = FixedLogTypes | DynamicLogTypes | CustomLogTypes;
 
 /** Constructor options */
 interface ConstructorOptions {
+    initSilent?: boolean;
     loglevel?: LogLevel;
     useEmojiAsLogType?: boolean;
     logTimestamp?: LogTimestampOptions;
