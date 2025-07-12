@@ -130,7 +130,7 @@ However, if you prefer a completely silent initialization, you can disable this 
 const loggify: Loggify = new Loggify({ initSilent: true });
 ```
 
-![Output: removed caller information and memory usage via constructor](https://raw.githubusercontent.com/pbrgld/loggify/main/documentation/constructorinitSilent.png)
+![Output: removed caller information and memory usage via constructor](https://raw.githubusercontent.com/pbrgld/loggify/main/documentation/constructorInitSilent.png)
 
 ### Text coloring and styling and using emojis
 
