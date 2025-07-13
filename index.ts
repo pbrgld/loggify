@@ -11,10 +11,7 @@ import { name, version } from './package.json';
  * Todo section
  */
 //TODO: Prepare everything to make everything v1.0.0 ready
-//TODO: Implement a method or extend option to .flush() - clearing the logs from memory but not send to console
 //TODO: Append to file? Not sure if this is needed (Wait for community to request)
-//TODO: Add documentation for set log level
-//TODO: Add documentation for define what should be logged in which log level
 //TODO: Work on Roadmap - Focus on GrafanaLoki integration
 
 /**
@@ -143,7 +140,7 @@ export default class Loggify {
                 this.logBuffer.set(contextId, { title: options?.context?.title, start: performance.now(), end: 0, logs: [] });
 
                 // Define context start element and push to  context in log buffer
-                const contextFrame: string = this.replaceAnsi(`[ansi:orange]╔═══════════════< Context start: ${options?.context?.title}[ansi:reset]`);
+                const contextFrame: string = this.replaceAnsi(`[ansi:orange]╔═══════════════< Context start: ${options?.context?.title || `contextId: ${options?.context?.id?.toString()}`}[ansi:reset]`);
                 this.logBuffer.get(contextId)!.logs.push(`${contextFrame}\n`);
             }
 
@@ -349,23 +346,27 @@ export default class Loggify {
      * from log buffer. When a context ID is not found or does not exist anymore the function will log an error and
      * return FALSE, welse it will print the logs and return TRUE.
      * @param {String} contextId Unique ID to identify the context area that holds all relevant logs 
+     * @param {FlushOptions} options Options like discarding the logs and not render to console
      * @returns {Boolean} Returns FALSE when context ID cannot found in log buffer, otherwise will return TRUE
      */
-    flush(contextId: string) {
+    flush(contextId: string, options?: FlushOptions): boolean {
         //! ContextId not found in LogBuffer
         if (!this.logBuffer.has(contextId)) {
             this.console(`Context ID "[ansi:yellow]${contextId}[ansi:reset] does not exist in log buffer!`, 'error', { logLevel: 'off' });
             return false;
         }
 
-        // Iterate through log records
-        for (const record of this.logBuffer.get(contextId).logs) {
-            process.stdout.write(record);
-        }
+        // Do not render to console when discard is explicitly set
+        if (options?.discardContextLog != true) {
+            // Iterate through log records
+            for (const record of this.logBuffer.get(contextId).logs) {
+                process.stdout.write(record);
+            }
 
-        // Render context closing frame
-        const contextFrame: string = this.replaceAnsi(`[ansi:orange]╚═══════════════> Context end: ${this.logBuffer.get(contextId).title}[ansi:reset] | [ansi:magenta]Duration:[ansi:reset] ${this.formatDuration(this.logBuffer.get(contextId).end - this.logBuffer.get(contextId).start)}\n`);
-        process.stdout.write(contextFrame);
+            // Render context closing frame
+            const contextFrame: string = this.replaceAnsi(`[ansi:orange]╚═══════════════> Context end: ${this.logBuffer.get(contextId).title || `contextID: ${contextId}`}[ansi:reset] | [ansi:magenta]Duration:[ansi:reset] ${this.formatDuration(this.logBuffer.get(contextId).end - this.logBuffer.get(contextId).start)}\n`);
+            process.stdout.write(contextFrame);
+        }
 
         // Delete context from log buffer after written output
         this.logBuffer.delete(contextId);
@@ -646,6 +647,10 @@ interface ConstructorOptions {
     logCallerInformation?: boolean;
     defaultCallerCallStackLevel?: number;
     logMemoryUsage?: boolean;
+}
+
+interface FlushOptions {
+    discardContextLog?: boolean;
 }
 
 interface ObjectSizeResponse {
