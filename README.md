@@ -214,6 +214,48 @@ This makes it simple to track the performance of asynchronous operations and ben
 
 > 🧠 **Advanced notice:** You can either pass the performance counter _start_ and end _metrics_ via the metrics object or alternatively you can pass milliseconds to the _duration_ parameter if you only have a result value.
 
+### 🎚️ Set Log Level (Dynamically)
+
+**Loggify** allows you to control the verbosity of your log output through log levels — either during _initialization_ or at _any time during runtime_.
+
+When creating a new instance of the class, you can pass a logLevel parameter into the constructor. Supported levels are:
+
+- "off" – disables all output
+- "minimal" – logs only critical or essential events
+- "full" – logs everything with full detail and styling
+
+You can also update the log level at any point later using:
+
+```ts
+loggify.setLogLevel("minimal");
+```
+
+![Method: set log level](https://raw.githubusercontent.com/pbrgld/loggify/main/documentation/caseSetLogLevel.png)
+
+### Assigning log messages to a log level
+
+As mentioned in th section set log level, there are three log levels you can assign your log messages to. This you should do to dynamically and easy reduce logging in example prodution environment.
+
+Assigning a log message to a log level is very simple and straight forward. In the Console Options is a parameter logLevel, just provide either one of the values:
+
+- **off** - message will always be logged
+- **minimal** - message will not be logged when log level is set to off
+- **full** - message will only be logged whenlog level is set to full
+
+```ts
+// Set log level
+loggify.setLogLevel("minimal");
+
+// Define which log level the information should be assigned to
+loggify.console("Off", "circleRed", { logLevel: "off" });
+loggify.console("Minimal", "circleOrange", { logLevel: "minimal" });
+loggify.console("Full", "circleBlue", { logLevel: "full" });
+```
+
+![Output: context based logging](https://raw.githubusercontent.com/pbrgld/loggify/main/documentation/assignedLogLevels.png)
+
+> ⚠️ **Note:** When not explicitly setting a log level within the console options, by default the log message will be assigned to **full**
+
 ### Context logging example
 
 **Loggify** supports context-based logging, a powerful mechanism that lets you group related log messages under a shared execution context — and output them all at once, in a clean, structured block.
@@ -265,6 +307,14 @@ loggify.flush(uniqueContextId);
 
 ![Output: context based logging](https://raw.githubusercontent.com/pbrgld/loggify/main/documentation/caseContext.png)
 
+🚫 Discard context logging
+
+> When using the flush method, you can pass the option "discardContextLog" which is a boolean. Set to _TRUE_ to not render what has been logged to the console. When is this handy to be uesed? -> When you initializes and start a function, you can start the contextual logging into memory and when your funtion exits with a logical error or inside the catch or finally block, you can use flush to log the issue to the console, while on the other hand when the function exists successfully, you may not want to render the contextual logging results, so on success, you'll flush the data from the memory and not rendering to console.
+
+```ts
+loggify.flush(contextId, { discardContextLog: true });
+```
+
 ## 🧭 Project Philosophy & Community Focus
 
 This is the **first package** I’m sharing with the community – and it’s something I deeply care about.
@@ -308,6 +358,24 @@ The following improvements are planned to make Loggify even more powerful and fl
 
 - **🛰️ Native AWS CloudWatch Integration (planned)**
   Support for a native integration with AWS CloudWatch is on the roadmap. The goal is to enable zero-dependency log forwarding by directly interacting with the AWS CloudWatch Logs API. This feature will allow users to stream logs to the cloud without relying on external packages, offering high performance and full control while staying aligned with Loggify’s lightweight architecture.
+
+- **🏷️ Banner Logging**
+
+  **Loggify** will introduce a new banner feature to highlight important log entries in a visually distinct and prominent block within the console output. These banners can be used to signal critical events, section headers, or state transitions — especially powerful in the context of Context Logging, where grouped logs can be framed by eye-catching visual elements.
+
+  The banner output will be highly customizable, allowing you to define:
+
+  - A title message
+  - Optional subtext
+  - Color styling (ANSI)
+  - Symbolic decorations (like 📣🚨🛠️)
+
+  Why it matters:
+
+  - Helps developers instantly spot important events within large log streams
+  - Makes Context Logging blocks more structured and readable
+  - Improves debugging by clearly separating execution phases or issue boundaries
+  - Great for start/end markers, alerts, or build steps in CI/CD
 
 ## 📝 License
 
