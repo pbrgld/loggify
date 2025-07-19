@@ -3,6 +3,7 @@
  * This is a common library that handels all console operations. It's purpose is to provide a fast and powerful package
  * of methods and features that allows to go from zero to hero in no time using standards accross all projects.
  */
+import os from 'os';
 import { basename } from "path";
 import util from 'util';
 import { name, version } from './package.json';
@@ -13,6 +14,8 @@ import { name, version } from './package.json';
 //TODO: Prepare everything to make everything v1.0.0 ready
 //TODO: Append to file? Not sure if this is needed (Wait for community to request)
 //TODO: Work on Roadmap - Focus on GrafanaLoki integration
+//TODO: Documentation GrafanaLoki
+//TODO: Documentation Update usage ob LogTypeBadge - replace use emoji boolean and provide options off - tiny = 1 char, mini 2 chars eventuellay and full = 10 chars
 
 /**
  * Console class
@@ -21,11 +24,12 @@ export default class Loggify {
     private logLevel: LogLevel = 'full';
     private logTimestamp: boolean = true;
     private logTimestampType: string = 'time';
-    private typeTagUseEmoji: boolean = true;
+    private logTypeBadge: LogTypeBadge = 'emoji';
     private logCallerInformation: boolean = true;
     private logCallerCallStackLevel: number = 3;
     private logMemory: boolean = true;
     private logBuffer: any = new Map();
+    private grafanaLoki: GrafanaLoki = {};
     private ansi: any = {
         // Colors
         black: '\x1b[30m',
@@ -68,18 +72,22 @@ export default class Loggify {
     constructor(options?: ConstructorOptions) {
         // Init/set class
         if (options?.loglevel) this.logLevel = options.loglevel;
-        if (typeof options?.useEmojiAsLogType === 'boolean') this.typeTagUseEmoji = options.useEmojiAsLogType;
+        if (typeof options?.logTypeBadge === 'string') this.logTypeBadge = options.logTypeBadge;
         if (typeof options?.logTimestamp?.enabled === 'boolean') this.logTimestamp = options.logTimestamp.enabled;
         if (typeof options?.logTimestamp?.mode === 'string') this.logTimestampType = options.logTimestamp.mode;
         if (typeof options?.logCallerInformation === 'boolean') this.logCallerInformation = options.logCallerInformation;
         if (!isNaN(parseInt(`${options?.defaultCallerCallStackLevel}`))) this.logCallerCallStackLevel = parseInt(`${options?.defaultCallerCallStackLevel}`);
         if (typeof options?.logMemoryUsage === 'boolean') this.logMemory = options.logMemoryUsage;
 
+        // Initialize GrafanaLoki
+        if (options?.grafanaLoki) {
+            this.grafanaLokiInit(options.grafanaLoki);
+        }
+
         // Output (info)
         if (options?.initSilent !== true) {
             this.logInit();
         }
-
     }
 
     /** Logs the current initialization and setup of Loggify */
@@ -88,7 +96,7 @@ export default class Loggify {
         this.console(`├─── Log level: [ansi:magenta]${this.logLevel}[ansi:reset]`, undefined, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 2 });
         this.console(`├─── Log timestamp: [ansi:magenta]${this.logTimestamp}[ansi:reset]`, undefined, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 2 });
         if (this.logTimestamp) this.console(`├─── Timestamp format: [ansi:magenta]${this.logTimestampType}[ansi:reset]`, undefined, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 2 });
-        this.console(`├─── Log type as emojis: [ansi:magenta]${this.typeTagUseEmoji}[ansi:reset]`, undefined, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 2 });
+        this.console(`├─── Log type badge: [ansi:magenta]${this.logTypeBadge}[ansi:reset]`, undefined, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 2 });
         this.console(`├─── Log caller information: [ansi:magenta]${this.logCallerInformation}[ansi:reset]`, undefined, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 2 });
         this.console(`├─── Default caller information level: [ansi:magenta]${this.logCallerCallStackLevel}[ansi:reset]`, undefined, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 2 });
         this.console(`╰─── Log memory usage: [ansi:magenta]${this.logMemory}[ansi:reset]`, undefined, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 2 });
@@ -113,6 +121,236 @@ export default class Loggify {
         }
     }
 
+    /** Initialize Grafana Loki */
+    grafanaLokiInit(options: GrafanaLoki) {
+        // Manipulate/optimized init object
+        // Correct hostname
+        if (options.isSecure === true) {
+            options.hostname = `https://${options.hostname?.replaceAll('http://', '').replaceAll('https://', '')}`;
+        }
+        else if (options.isSecure === false) {
+            options.hostname = `http://${options.hostname?.replaceAll('http://', '').replaceAll('https://', '')}`;
+        }
+        else if (!options.isSecure) {
+            options.hostname = `http://${options.hostname?.replaceAll('http://', '').replaceAll('https://', '')}`;
+        }
+
+        //* Connection -> Connecting
+        if (options.hostname && options.port) options.connection = {
+            status: 'connecting',
+            message: `Connecting to "${options.hostname}" via port "${options.port}" ...`
+        }
+        //° Connection -> Invalid = undefined
+        else options.connection = {
+            status: undefined,
+            message: `Incomplete connection setup! Require hostname and port!`
+        }
+
+        // Store object in calls property
+        this.grafanaLoki = options;
+
+        // Test connection
+        this.grafanaLokiTestConnection();
+    }
+
+    /**
+     * Test connection to Grafana Loki will test the server and port settings provided as well as user and password or 
+     * bearer token. In case of success the endpoint will provide some information such as version and revision into
+     * the server info object and the function returns TRUE in case of success and FALSE in case of an error
+     * @returns {Boolean}
+     */
+    async grafanaLokiTestConnection(): Promise<boolean> {
+        //! GrafanaLoki not instantiated
+        if (Object.keys(this.grafanaLoki).length === 0 || !this.grafanaLoki.connection?.status) {
+            this.console('GrafanaLoki: [ansi:red]Not initialized![ansi:reset] Cannot test connection!', 'error', { logLevel: 'off' });
+            return false;
+        }
+        //! GrafanaLoki missing hostname
+        if (this.grafanaLoki.hostname === 'http://' || this.grafanaLoki.hostname === 'https://') {
+            this.grafanaLoki.connection = {
+                status: 'error',
+                message: 'Incomplete setup! Missing hostname!'
+            }
+            return false;
+        }
+
+        // Init
+        const pathTest: string = '/loki/api/v1/status/buildinfo';
+        let serverInfo = {
+            connectionTested: false,
+            version: '',
+            revision: '',
+            branch: '',
+            buildUser: '',
+            buildDate: '',
+            goVersion: ''
+        };
+
+        // Request to GrafanaLoki Server
+        try {
+            const response = await fetch(`${this.grafanaLoki.hostname}:${this.grafanaLoki.port}${pathTest}`);
+
+            // Response => 200 OK
+            if (response.status === 200) {
+                const body: any = await response.json();
+
+                if (body.version) {
+                    serverInfo.version = body.version;
+                    serverInfo.connectionTested = true;
+                }
+                if (body.revision) serverInfo.revision = body.revision;
+                if (body.branch) serverInfo.branch = body.branch;
+                if (body.buildUser) serverInfo.buildUser = body.buildUser;
+                if (body.buildDate) serverInfo.buildDate = body.buildDate;
+                if (body.goVersion) serverInfo.goVersion = body.goVersion;
+
+                this.grafanaLoki.serverInfo = serverInfo;
+
+                this.grafanaLoki.connection = {
+                    status: 'connected',
+                    message: `Connected to "${this.grafanaLoki.hostname}:${this.grafanaLoki.port}${pathTest}"!`
+                }
+
+                this.console(`GrafanaLoki: [ansi:green]Connection successfully tested![ansi:reset] v${serverInfo.version}(${serverInfo.revision}) [ansi:gray][${serverInfo.buildDate}][ansi:reset]`, 'okay', { logLevel: 'minimal' });
+
+                return true;
+            }
+
+            //° Failed to connect ==> error
+            else {
+                // Update connection info
+                this.grafanaLoki.connection = {
+                    status: 'error',
+                    message: `Bad response connecting to "${this.grafanaLoki.hostname}:${this.grafanaLoki.port}${pathTest}" => ${response.status} - ${response.statusText}`
+                }
+
+                this.console(`GrafanaLoki: [ansi:yellow]Testing connection failed![ansi:reset] => ${response.status} - ${response.statusText}`, 'error', { logLevel: 'off' });
+                return false;
+            }
+
+        }
+        catch (error: any) {
+            // Update connection info
+            this.grafanaLoki.connection = {
+                status: 'error',
+                message: `Failed connecting to "${this.grafanaLoki.hostname}:${this.grafanaLoki.port}${pathTest}" => ${error.toString()}`
+            }
+            this.console(`GrafanaLoki: [ansi:red]Error while testing connection![ansi:reset] => ${error.toString()}`, 'error', { logLevel: 'off' });
+            return false
+        }
+    }
+
+    /**
+     * Pushes stream with a set of labels and a set of log records to the connected GrafanaLoki Server. Will not do anythins when there is no tested connection is class property
+     * @param {GrafanaLokiEntry} entries Array of records you want to log. TS will be automatically set if not provided, must be in nanoseconds. Message can be either a string or an object which will be stringified and can be parsed by GrafanaLoki later
+     * @param {GrafanaLokiLabels} labels A set of labels defining the stream combining the global labels set during GrafanaLoki init and this method. NOTE: Globals will overwrite locals 
+     * @param {any} options Options - not yet implemented 
+     * @returns {Boolean} In case of SUCCESS will return TRUE otherwise will return FALSE
+     */
+    async grafanaLokiPush(entries: Array<GrafanaLokiEntry>, labels?: GrafanaLokiLabels, options?: any): Promise<boolean> {
+        //° Connection still connecting
+        if (this.grafanaLoki.connection?.status === "connecting") {
+            const timeoutMs = 15000;
+            const intervallMs = 100;
+            const start = Date.now();
+
+            while (this.grafanaLoki.connection.status === "connecting") {
+                if (Date.now() - start >= timeoutMs) {
+                    if (options?.silent !== true) this.console(`GrafanaLoki: [ansi:yellow]Connection timeout reached[ansi:reset] connecting to "${this.grafanaLoki.hostname}"`, 'warn');
+                    this.grafanaLoki.connection = {
+                        status: 'error',
+                        message: `Connection timeout reached connecting to "${this.grafanaLoki.hostname}"`
+                    }
+                    return false;
+                }
+
+                await new Promise(resolve => setTimeout(resolve, intervallMs));
+            }
+
+            // Ab hier ist x !== "connecting"
+            this.grafanaLoki.connection.status = 'connected';
+        }
+
+        //! No connection setup
+        if (Object.keys(this.grafanaLoki).length === 0 || !this.grafanaLoki.connection?.status) {
+            if (options?.silent !== true) this.console(`GrafanaLoki: [ansi:red]Cannot push![ansi:reset] No connection setup!`, 'error');
+            return false;
+        }
+
+        //! Connection is in error state
+        if (this.grafanaLoki.connection?.status === "error") {
+            if (options?.silent !== true) this.console(`GrafanaLoki: [ansi:red]Cannot push![ansi:reset] Connection error => ${this.grafanaLoki.connection.message}!`, 'error');
+            return false;
+        }
+
+        //° Empty array -> no entries
+        if (entries.length === 0) {
+            if (options?.silent !== true) this.console('GrafanaLoki: [ansi:yellow]Nothing to push![ansi:reset] => No records provided in entries!');
+            return false;
+        }
+
+        //* Init
+        const path: string = `/loki/api/v1/push`;
+        const payload: any = { streams: [] };
+        const appLabels = this.grafanaLoki.labels;
+        let streamRecord: any = {};
+        let entriesModified: any = [];
+
+        // Merge lebels from function level and app level
+        //° Note: keys defined on function level will overwrite keys on app level
+        const stream: any = { ...appLabels, ...labels };
+
+        // Find host reference to this and replace with hostname
+        if (stream?.host === 'this') {
+            const ip = Object.values(os.networkInterfaces()).flat().find(i => i?.family === 'IPv4' && !i.internal)?.address;
+            stream.host = `${os.hostname()}[${ip}]`;
+        }
+        streamRecord.stream = stream;
+
+        // Iterate through entries
+        for (let i = 0; i < entries.length; i++) {
+            // Fix missing timestamp
+            if (!entries[i]!.ts) {
+                entries[i]!.ts = `${Date.now() * 1_000_000}`;
+            }
+            if (typeof entries[i]?.line === 'object') entries[i]!.line = JSON.stringify(entries[i]?.line);
+
+            // To Array
+            entriesModified[i] = [`${entries[i]?.ts}`, `${entries[i]?.line}`];
+
+        }
+        streamRecord.values = entriesModified;
+
+        // Push to payload
+        payload.streams.push(streamRecord);
+
+        try {
+            const response: Response = await fetch(`${this.grafanaLoki.hostname}:${this.grafanaLoki.port}${path}`, {
+                method: 'POST',
+                body: JSON.stringify(payload),
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            //* ==> 204 = Successful
+            //§ HTTP 204 - no Content appears to be the standard response on success from GrafanaLoki
+            if (response.status === 204) {
+                if (options?.silent !== true) this.console(`GrafanaLoki: [ansi:green]Successfully pushed![ansi:reset] ==> ${this.grafanaLoki.hostname}:${this.grafanaLoki.port}`, 'okay', { logLevel: 'full' });
+                return true;
+            }
+            //° ==> 4xx Bad response
+            else {
+                if (options?.silent !== true) this.console(`GrafanaLoki: [ansi:yellow]Bad response while pushing![ansi:reset] ==> ${response.status} ${response.statusText}`, 'warn', { logLevel: 'off' });
+                return false;
+            }
+        }
+        catch (error: any) {
+            if (options?.silent !== true) this.console(`GrafanaLoki: [ansi:red]Push failed![ansi:reset] ==> ${error.toString()}`, 'error', { logLevel: 'off' });
+            return false;
+        }
+    }
+
     /**
      * Console output
      * Based on the log level and the type lines will be added to the console
@@ -121,7 +359,7 @@ export default class Loggify {
      * @param {Object} object Along with the message provide an object to be displayed within the output 
      * @param {Object} options Set of options to be applied to the output (e.g. timestamp: true) 
      */
-    console(message?: string, type?: LogType, options?: LogConsoleOptions, object?: any) {
+    console(message?: string | object | number, type?: LogType, options?: LogConsoleOptions, object?: any) {
         // Log level control
         if (this.logLevel == 'off' && options?.logLevel != 'off') return false;
         if (this.logLevel == 'minimal' && options?.logLevel != 'off' && options?.logLevel != 'minimal') return false;
@@ -132,6 +370,19 @@ export default class Loggify {
         let contextId: string | symbol | undefined = options?.context?.id || undefined;
         let callerInformation: string | undefined = undefined;
         let memory: string = '';
+
+        // Auto-Handle Object as a message and check message for a string
+        if (typeof message === 'object') {
+            object = message;
+            message = 'Found object in message => object:';
+        }
+        else if (typeof message === 'number') message = `${message}`;
+        else if (typeof message !== 'string') {
+            message = `Invalid data type [ansi:red]"${typeof message}"[ansi:reset] for message! Must be either string, number or object`;
+            type = 'error';
+            if (options) options.logLevel = 'off';
+            else options = { logLevel: 'off' };
+        }
 
         /** Check for context and initialize if needed */
         if (contextId) {
@@ -148,8 +399,13 @@ export default class Loggify {
             else this.logBuffer.get(contextId)!.end = performance.now();
         }
 
-        /** Type tag: use Emoji */
-        if (this.typeTagUseEmoji) {
+        /** Log type badge is off */
+        if (this.logTypeBadge === 'off') {
+            typeTag = '';
+        }
+
+        /** Log type badge is set to use Emoji */
+        else if (this.logTypeBadge === 'emoji') {
             // Specials & overwrites
             if (type === 'metrics') typeTag = `${this.emoji.timer} `;
 
@@ -163,8 +419,33 @@ export default class Loggify {
             typeTag = `${typeTag} `;
         }
 
-        /** Type tag: DO NOT USE EMOJI */
-        else {
+        /** Log type badge is set to tiny or mini */
+        else if (this.logTypeBadge === 'tiny' || this.logTypeBadge === 'mini') {
+            // Init
+            let spacer: string = ' '; // set value for tiny
+            if (this.logTypeBadge === 'mini') spacer = '   '; // change for mini
+
+            // Build Tags
+            if (type == 'okay') typeTag = `[ansi:green][ansi:inverse]${spacer}`;
+            else if (type == 'success') typeTag = `[ansi:green][ansi:inverse]${spacer}`;
+            else if (type == 'info') typeTag = `[ansi:white][ansi:inverse]${spacer}`;
+            else if (type == 'debug') typeTag = `[ansi:blue][ansi:inverse]${spacer}`;
+            else if (type == 'warn' || type == 'warning') typeTag = `[ansi:yellow][ansi:inverse]${spacer}`;
+            else if (type == 'error') typeTag = `[ansi:red][ansi:inverse]${spacer}`;
+            else if (type == 'metrics') typeTag = `[ansi:brightMagenta][ansi:inverse]${spacer}`;
+            else if (type?.startsWith('custom=')) typeTag = `${type.split('=')[1]}${spacer}`;
+            else if (type) typeTag = `[ansi:gray][ansi:inverse]${spacer}`;
+            else typeTag = spacer;
+
+            // Replace ANSI colors and Styles
+            typeTag = this.replaceAnsi(typeTag);
+
+            // Add ANSI reset
+            typeTag = typeTag + this.ansi.reset + ' ';
+        }
+
+        /** Log type badge is set to full */
+        else if (this.logTypeBadge === 'full') {
             // Build Tags
             if (type == 'okay') typeTag = '[ansi:green][ansi:inverse]OKAY';
             else if (type == 'success') typeTag = '[ansi:green][ansi:inverse]SUCCESS';
@@ -242,7 +523,7 @@ export default class Loggify {
 
         /** Render object to console */
         if (object && typeof object === 'object') {
-            // JSON schön formatieren mit Farben
+            // JSON pretty format and use colors - custom colors 
             const objectFormatted = util.inspect(this.flattenObject(object), {
                 colors: false,      // Disable ANSI colors - to use own
                 depth: null,       // Show all levels
@@ -262,11 +543,48 @@ export default class Loggify {
             const objectInfoMessage: string = this.replaceAnsi(`[ansi:gray]Object has "${objectInfo.chars}" characters with a total size of ${objectInfo.size} [ansi:reset]`);
 
             // Push to logBuffer: when contextId is set
-            if (contextId) this.logBuffer.get(contextId)!.logs.push(`${objectFormatted}\n${objectInfoMessage}\n`);
+            if (contextId) {
+                // Context frame
+                const contextFrame: string = this.replaceAnsi(`[ansi:orange]║[ansi:reset] `);
+                const linePrefix: string = `${contextFrame}         `;
+
+                const objectIndented = objectFormatted
+                    .split('\n')
+                    .map(line => `${linePrefix}${line}`)
+                    .join('\n');
+
+
+                this.logBuffer.get(contextId)!.logs.push(`${objectIndented}\n${linePrefix}${objectInfoMessage}\n`);
+            }
 
             // Send to standard output
             else {
-                process.stdout.write(`${objectFormatted}\n${objectInfoMessage}\n`);
+                // Indent object
+                const linePrefix: string = `         `;
+
+                const objectIndented = objectFormatted
+                    .split('\n')
+                    .map(line => `${linePrefix}${line}`)
+                    .join('\n');
+
+                process.stdout.write(`${objectIndented}\n${linePrefix}${objectInfoMessage}\n`);
+            }
+        }
+
+        /** Push to GrafanaLoki */
+        if (!options?.grafanaLoki?.doNotPush || options.grafanaLoki.doNotPush !== true) {
+            if (this.grafanaLoki?.connection?.status === 'connected' || this.grafanaLoki?.connection?.status === 'connecting') {
+                // Init
+                let line: any = {};
+                let labels: GrafanaLokiLabels = { level: type }
+
+                // Add to line object if valid
+                if (message) line.message = this.stripAnsi(message).replaceAll('╭', '').replaceAll('├', '').replaceAll('╰', '').replaceAll('─', '').trim();
+                if (object && typeof object === 'object') line.object = object;
+                if (options?.context?.id) labels.contextId = options?.context?.id;
+
+                // Push to GrafanaLoki
+                this.grafanaLokiPush([{ ts: `${Date.now() * 1_000_000}`, line }], labels, { silent: true });
             }
         }
     }
@@ -383,6 +701,18 @@ export default class Loggify {
     replaceAnsi(str: string) {
         str = str.replace(/\[ansi:(\w+)\]/g, (_, key) => this.ansi[key] || `[ansi:${key}]`);
         return str;
+    }
+
+    /**
+     * Strip all ANSI code from String and return a clean string
+     * @param {String} str Provide a string that may or may not have ANSI code in it 
+     * @returns {String} Receive a string stripped by ANSI code
+     */
+    stripAnsi(str: string): string {
+        const ansiRegex =
+            // Matches most common ANSI escape sequences
+            /[\u001B\u009B][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g;
+        return str.replace(ansiRegex, '');
     }
 
     /**
@@ -585,7 +915,7 @@ const emojis = {
  * - 'minimal' = only important logs
  * - 'full' = all logs
  */
-export type LogLevel = 'off' | 'minimal' | 'full';
+type LogLevel = 'off' | 'minimal' | 'full';
 
 /** Timestamp mode for logging */
 type LogTimestampMode = 'time' | 'dateTime';
@@ -628,33 +958,99 @@ interface LogConsoleOptions {
         end?: number;
         duration?: number;
     }
+
+    // GrafanaLoki
+    grafanaLoki?: {
+        doNotPush?: boolean;
+        levelOverwrite?: string;
+        labels?: GrafanaLokiLabels;
+    }
 }
 
 /** Fixed or static log types  */
-type FixedLogTypes = 'okay' | 'success' | 'info' | 'debug' | 'warn' | 'warning' | 'error' | 'metrics';
+type FixedLogTypes = 'none' | 'okay' | 'success' | 'info' | 'debug' | 'warn' | 'warning' | 'error' | 'metrics';
+
 /** Dynamically build types based on the emoji ley object */
 type DynamicLogTypes = keyof typeof emojis;
+
 /** Build a custom type with static start and dynamic end */
 type CustomLogTypes = `custom=${string}`; // e.g. 'custom=TRIGGER', 'custom=IMPORT'
 type LogType = FixedLogTypes | DynamicLogTypes | CustomLogTypes;
+
+/** Connection status */
+type ConnectionStatus = undefined | 'connecting' | 'connected' | 'error';
+
+/** LogTypeBadge */
+type LogTypeBadge = 'off' | 'emoji' | 'tiny' | 'mini' | 'full';
 
 /** Constructor options */
 interface ConstructorOptions {
     initSilent?: boolean;
     loglevel?: LogLevel;
-    useEmojiAsLogType?: boolean;
+    logTypeBadge?: LogTypeBadge;
     logTimestamp?: LogTimestampOptions;
     logCallerInformation?: boolean;
     defaultCallerCallStackLevel?: number;
     logMemoryUsage?: boolean;
+    grafanaLoki?: GrafanaLoki;
 }
 
+/** Flush Options */
 interface FlushOptions {
     discardContextLog?: boolean;
 }
 
+/** Object size response */
 interface ObjectSizeResponse {
     size: string;
     bytes: number;
     chars: number;
 }
+
+/** Grafana Loki Object */
+interface GrafanaLoki {
+    isSecure?: boolean;
+    hostname?: string;
+    port?: number;
+    path?: string;
+    labels?: GrafanaLokiLabels;
+    auth?: {
+        type?: AuthType;
+        user?: string;
+        pass?: string;
+        bearerToken?: string;
+    }
+    connection?: {
+        status?: ConnectionStatus;
+        message?: string;
+    }
+    serverInfo?: {
+        connectionTested?: boolean;
+        version?: string;
+        revision?: string;
+        branch?: string;
+        buildUser?: string;
+        buildDate?: string;
+        goVersion?: string;
+    }
+}
+
+/** Auth Token  */
+type AuthType = 'none' | 'basic' | 'bearer';
+
+/** Grafana Loki Entry structure */
+interface GrafanaLokiEntry {
+    ts?: string;
+    line: any;
+}
+
+/** Grafana Loki Label structure - only flat object with key-value-pairs as string */
+type GrafanaLokiLabels = Partial<{
+    app: string;
+    job: string;
+    env: string;
+    level: string;
+    host: string;
+}> & {
+    [key: string]: any;
+};
