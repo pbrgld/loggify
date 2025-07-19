@@ -36,6 +36,7 @@ Designed for developers who want more expressive and structured logs without sac
 - 🕵️ **Caller info support** – trace logs back to where they were triggered
 - 🕒 **Customizable timestamps** – add or remove as needed
 - 😎 **Emoji-based or text-based tags** – switch as you like
+- 🔌 **Native Grafana Loki Support** - go beyond console logging and push your logs to GrafanaLoki
 - 🔧 **Built to play nicely with Bun.js** – but works with Node.js too!
 
 ## ⚙️ Installation
@@ -350,6 +351,8 @@ The following improvements are planned to make Loggify even more powerful and fl
 
 - **📊 Native Grafana Loki Support (Zero-Dependency)**
 
+  ![Implemented](https://img.shields.io/badge/status-implemented-brightgreen) ![Beta](https://img.shields.io/badge/version-beta-orange)
+
   Future versions of **Loggify** will support native integration with Grafana Loki for log aggregation and monitoring – without introducing any external dependencies.
 
   This feature will use Loki’s REST-based /loki/api/v1/push endpoint directly, enabling developers to stream structured logs to a local or remote Loki instance using native HTTP calls (fetch, https.request, etc.).
@@ -376,6 +379,10 @@ The following improvements are planned to make Loggify even more powerful and fl
   - Makes Context Logging blocks more structured and readable
   - Improves debugging by clearly separating execution phases or issue boundaries
   - Great for start/end markers, alerts, or build steps in CI/CD
+
+## 📄 Changelog
+
+You can find all notable changes in the [Changelog](https://raw.githubusercontent.com/pbrgld/loggify/main/CHANGELOG.md).
 
 ## 📝 License
 
