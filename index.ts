@@ -154,6 +154,29 @@ export default class Loggify {
     }
 
     /**
+     * Build Authorization Header Value for GrafanaLoki REST API requests
+     * This is done based on the auth initialozation of the GrafanaLoki configuration. Will either use none/empty value,
+     * basic auth - using user name and password or bearer token
+     * @returns {String} Returns either empty string for none, basic or bearer token value string for HTTP request header
+     */
+    grafanaLokiAuthorizationHeader(): string {
+        // Init
+        let authorization = '';
+
+        // Build Basic Authorization Header Value
+        if (this.grafanaLoki.auth?.type === 'basic') {
+            authorization = `Basic ${Buffer.from(`${this.grafanaLoki.auth.user}:${this.grafanaLoki.auth.pass}`).toString('base64')}`;
+        }
+
+        // Build Bearer Authorization Header Value
+        else if (this.grafanaLoki.auth?.type === 'bearer') {
+            authorization = `Bearer ${this.grafanaLoki.auth.bearerToken}`;
+        }
+
+        return authorization;
+    }
+
+    /**
      * Test connection to Grafana Loki will test the server and port settings provided as well as user and password or 
      * bearer token. In case of success the endpoint will provide some information such as version and revision into
      * the server info object and the function returns TRUE in case of success and FALSE in case of an error
@@ -188,7 +211,12 @@ export default class Loggify {
 
         // Request to GrafanaLoki Server
         try {
-            const response = await fetch(`${this.grafanaLoki.hostname}:${this.grafanaLoki.port}${pathTest}`);
+            const response = await fetch(`${this.grafanaLoki.hostname}:${this.grafanaLoki.port}${pathTest}`, {
+                method: 'get',
+                headers: {
+                    'Content-Type': 'application/json', 'Authorization': this.grafanaLokiAuthorizationHeader()
+                }
+            });
 
             // Response => 200 OK
             if (response.status === 200) {
@@ -330,6 +358,7 @@ export default class Loggify {
                 body: JSON.stringify(payload),
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': this.grafanaLokiAuthorizationHeader()
                 }
             });
 

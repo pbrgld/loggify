@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.2.1] – 2025-07-20
+
+### ✨ Added
+
+- GrafanaLoki support for REST API Authorization has been implemented, supporting basic as well as bearer token
+
+---
+
 ## [0.2.0] – 2025-07-20
 
 > **Highlights:** Native integration to GrafanaLoki
