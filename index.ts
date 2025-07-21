@@ -91,7 +91,7 @@ export default class Loggify {
 
     /** Logs the current initialization and setup of Loggify */
     logInit() {
-        this.console(`╭ Loggify (@pbrgld/loggify) loaded from [ansi:cyan]${basename(__filename)}[ansi:reset]`, `init`, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 2 });
+        this.console(`╭ Loggify (@pbrgld/loggify) loaded [ansi:reset]`, `init`, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 2 });
         this.console(`├─── Log level: [ansi:magenta]${this.logLevel}[ansi:reset]`, undefined, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 2 });
         this.console(`├─── Log timestamp: [ansi:magenta]${this.logTimestamp}[ansi:reset]`, undefined, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 2 });
         if (this.logTimestamp) this.console(`├─── Timestamp format: [ansi:magenta]${this.logTimestampType}[ansi:reset]`, undefined, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 2 });

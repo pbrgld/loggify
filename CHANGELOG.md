@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.2.3] – 2025-07-21
+
+### 🐛 Fixed
+
+- Error => ReferenceError: \_\_filename is not defined
+
+---
+
 ## [0.2.2] – 2025-07-21
 
 ### 🐛 Fixed
