@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.2.2] – 2025-07-21
+
+### 🐛 Fixed
+
+- Error => needs an import attribute of type "json" in combination with package.json
+
+---
+
 ## [0.2.1] – 2025-07-20
 
 ### ✨ Added

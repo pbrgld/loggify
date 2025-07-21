@@ -6,7 +6,6 @@
 import os from 'os';
 import { basename } from "path";
 import util from 'util';
-import { name, version } from './package.json';
 
 /**
  * Todo section
@@ -92,7 +91,7 @@ export default class Loggify {
 
     /** Logs the current initialization and setup of Loggify */
     logInit() {
-        this.console(`╭ Loggify (${name}) v${version} loaded from [ansi:cyan]${basename(__filename)}[ansi:reset]`, `init`, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 2 });
+        this.console(`╭ Loggify (@pbrgld/loggify) loaded from [ansi:cyan]${basename(__filename)}[ansi:reset]`, `init`, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 2 });
         this.console(`├─── Log level: [ansi:magenta]${this.logLevel}[ansi:reset]`, undefined, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 2 });
         this.console(`├─── Log timestamp: [ansi:magenta]${this.logTimestamp}[ansi:reset]`, undefined, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 2 });
         if (this.logTimestamp) this.console(`├─── Timestamp format: [ansi:magenta]${this.logTimestampType}[ansi:reset]`, undefined, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 2 });
@@ -110,13 +109,13 @@ export default class Loggify {
         // Log Level has been changed
         if (currentLogLevel != logLevel) {
             this.logLevel = logLevel;
-            this.console(`${name} @LogLevel: "[ansi:brightBlue]${currentLogLevel}[ansi:reset]" => "[ansi:brightGreen]${this.logLevel}[ansi:reset]"`, 'info', { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 1 });
+            this.console(`Loggify @LogLevel: "[ansi:brightBlue]${currentLogLevel}[ansi:reset]" => "[ansi:brightGreen]${this.logLevel}[ansi:reset]"`, 'info', { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 1 });
             return true;
         }
 
         // No change required - new value equals current value
         else {
-            this.console(`${name} @LogLevel: already set to "${logLevel}"`, 'warn', { logLevel: 'minimal', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 1 });
+            this.console(`Loggify @LogLevel: already set to "${logLevel}"`, 'warn', { logLevel: 'minimal', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 1 });
             return false;
         }
     }
