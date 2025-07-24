@@ -6,6 +6,9 @@
 import os from 'os';
 import { basename } from "path";
 import util from 'util';
+import { ansiCodes } from './ansi';
+import { emojis } from './emojis';
+import type { LogType, LogConsoleOptions, LogLevel, LogTypeBadge, GrafanaLoki, GrafanaLokiEntry, GrafanaLokiLabels, ConstructorOptions, ObjectSizeResponse, FlushOptions } from './types';
 
 /**
  * Todo section
@@ -17,7 +20,7 @@ import util from 'util';
 //TODO: Documentation Update usage ob LogTypeBadge - replace use emoji boolean and provide options off - tiny = 1 char, mini 2 chars eventuellay and full = 10 chars
 //TODO: Add emojis: create, add
 //TODO: Review log types and eventually improve/fix mapping
-//TODO: Move type definitions into seperate file
+
 
 /**
  * Console class
@@ -570,7 +573,7 @@ export default class Loggify {
                 // Frame mode Full
                 if (!options?.context?.mode || options.context.mode === 'full') {
                     // Context frame
-                    contextFrame = this.replaceAnsi(`[ansi:orange]║[ansi:reset] `);
+                    contextFrame = this.replaceAnsi(`[ansi:${contextColor}]║[ansi:reset] `);
                 }
 
                 const linePrefix: string = `${contextFrame}         `;
@@ -887,261 +890,3 @@ export default class Loggify {
     }
 
 }
-
-/** Assets on top level */
-/** Emojis */
-const emojis = {
-    // Common
-    okay: '✅',
-    success: '✅',
-    info: 'ℹ️ ',
-    warn: '⚠️ ',
-    error: '❌',
-
-    // Specials
-    connect: '🛜 ',
-    timer: '⏱️ ',
-    explosion: '💥',
-    fuck: '🖕',
-    shit: '💩',
-    star: '⭐️',
-    rocket: '🚀',
-    init: '🔸',
-    finished: '🏁',
-    upload: '🔺',
-    download: '🔻',
-    fingerprint: '🫆 ',
-    secure: '🔐',
-
-    // Hearts
-    heart: '❤️ ',
-    heartBroken: '💔',
-    heartMagenta: '🩷 ',
-    heartRed: '❤️ ',
-    heartOrange: '🧡',
-    heartYellow: '💛',
-    heartGreen: '💚',
-    heartCyan: '🩵 ',
-    heartBlue: '💙',
-    heartPurple: '💜',
-    heartBlack: '🖤',
-    heartGray: '🩶 ',
-    heartWhite: '🤍',
-    heartBrown: '🤎',
-
-    // Circles
-    circleRed: '🔴',
-    circleOrange: '🟠',
-    circleYellow: '🟡',
-    circleGreen: '🟢',
-    circleBlue: '🔵',
-    circlePurple: '🟣',
-    circleBlack: '⚫️',
-    circleWhite: '⚪️',
-    circleBrown: '🟤',
-
-    // Squares
-    squareRed: '🟥',
-    squareOrange: '🟧',
-    squareYellow: '🟨',
-    squareGreen: '🟩',
-    squareBlue: '🟦',
-    squarePurple: '🟪',
-    squareBlack: '⬛️',
-    squareWhite: '⬜️',
-    squareBrown: '🟫'
-} as const;
-
-/** Ansi Codes */
-const ansiCodes = {
-    // Colors
-    black: '\x1b[30m',
-    red: '\x1b[31m',
-    green: '\x1b[32m',
-    yellow: '\x1b[33m',
-    blue: '\x1b[34m',
-    magenta: '\x1b[35m',
-    cyan: '\x1b[36m',
-    white: '\x1b[37m',
-
-    // Bright colors
-    brightBlack: '\x1b[90m',
-    brightRed: '\x1b[91m',
-    brightGreen: '\x1b[92m',
-    brightYellow: '\x1b[93m',
-    brightBlue: '\x1b[94m',
-    brightMagenta: '\x1b[95m',
-    brightCyan: '\x1b[96m',
-    brightWhite: '\x1b[97m',
-
-    // Additional colors
-    orange: '\x1b[38;5;208m',
-    gray: '\x1b[90m',
-
-    // Special options
-    reset: '\x1b[0m',
-    bold: '\x1b[1m',
-    dim: '\x1b[2m',
-    italic: '\x1b[3m',
-    underline: '\x1b[4m',
-    inverse: '\x1b[7m',
-    hidden: '\x1b[8m',
-    strikethrough: '\x1b[9m'
-} as const;
-
-/** Type Definitions */
-
-/**
- * LogLevel defines how detailed the log information will be
- * - 'off' = no logs at all (only errors)
- * - 'minimal' = only important logs
- * - 'full' = all logs
- */
-type LogLevel = 'off' | 'minimal' | 'full';
-
-/** Timestamp mode for logging */
-type LogTimestampMode = 'time' | 'dateTime';
-
-/** Context modes for context presentation */
-type ContextMode = 'off' | 'startEnd' | 'full';
-
-/**
- * Control the timestamp logging by either enabling or disabling it or decide whether you want time only be logged to
- * save some space or go with the full date and time
- */
-interface LogTimestampOptions {
-    enabled?: boolean;            // optional
-    mode?: LogTimestampMode;      // optional 'time' | 'dateTime'
-}
-
-/**
- * Options for console logs. Control specificly wheter to hide the timestamp in this particular output, join an output 
- * to a context or provide metrics for a standardized way of presenting durations
- */
-interface LogConsoleOptions {
-    // Timestamp
-    timestamp?: boolean;
-
-    // Log Level
-    logLevel?: LogLevel;
-
-    // Custom caller stack level
-    customLogCallerCallStackLevel?: number;
-
-    // Context
-    context?: {
-        id?: string | symbol;
-        title?: string;
-        mode?: ContextMode;
-        color?: AnsiColorCodesOnlyDynamicTypes;
-        readonly start?: number;
-        readonly end?: number;
-        readonly logs?: Array<string>;
-    }
-
-    // Metrics
-    metrics?: {
-        start?: number;
-        end?: number;
-        duration?: number;
-    }
-
-    // GrafanaLoki
-    grafanaLoki?: {
-        doNotPush?: boolean;
-        levelOverwrite?: string;
-        labels?: GrafanaLokiLabels;
-    }
-}
-
-/** Fixed or static log types  */
-type FixedLogTypes = 'none' | 'okay' | 'success' | 'info' | 'debug' | 'warn' | 'warning' | 'error' | 'metrics';
-
-/** Dynamically build types based on the ansi code object  */
-type AnsiCodeDynamicTypes = keyof typeof ansiCodes;
-type AnsiColorCodesOnlyDynamicTypes = Exclude<keyof typeof ansiCodes, 'reset' | 'bold' | 'dim' | 'italic' | 'underline' | 'inverse' | 'hidden' | 'strikethrough'>;
-
-/** Dynamically build types based on the emoji object */
-type EmojiDynamicTypes = keyof typeof emojis;
-
-/** Build a custom type with static start and dynamic end */
-type CustomLogTypes = `custom=${string}`; // e.g. 'custom=TRIGGER', 'custom=IMPORT'
-type LogType = FixedLogTypes | EmojiDynamicTypes | CustomLogTypes;
-
-/** Connection status */
-type ConnectionStatus = undefined | 'connecting' | 'connected' | 'error';
-
-/** LogTypeBadge */
-type LogTypeBadge = 'off' | 'emoji' | 'tiny' | 'mini' | 'full';
-
-/** Constructor options */
-interface ConstructorOptions {
-    initSilent?: boolean;
-    loglevel?: LogLevel;
-    logTypeBadge?: LogTypeBadge;
-    logTimestamp?: LogTimestampOptions;
-    logCallerInformation?: boolean;
-    defaultCallerCallStackLevel?: number;
-    logMemoryUsage?: boolean;
-    grafanaLoki?: GrafanaLoki;
-}
-
-/** Flush Options */
-interface FlushOptions {
-    discardContextLog?: boolean;
-}
-
-/** Object size response */
-interface ObjectSizeResponse {
-    size: string;
-    bytes: number;
-    chars: number;
-}
-
-/** Grafana Loki Object */
-interface GrafanaLoki {
-    isSecure?: boolean;
-    hostname?: string;
-    port?: number;
-    path?: string;
-    labels?: GrafanaLokiLabels;
-    auth?: {
-        type?: AuthType;
-        user?: string;
-        pass?: string;
-        bearerToken?: string;
-    }
-    connection?: {
-        status?: ConnectionStatus;
-        message?: string;
-    }
-    serverInfo?: {
-        connectionTested?: boolean;
-        version?: string;
-        revision?: string;
-        branch?: string;
-        buildUser?: string;
-        buildDate?: string;
-        goVersion?: string;
-    }
-}
-
-/** Auth Token  */
-type AuthType = 'none' | 'basic' | 'bearer';
-
-/** Grafana Loki Entry structure */
-interface GrafanaLokiEntry {
-    ts?: string;
-    line: any;
-}
-
-/** Grafana Loki Label structure - only flat object with key-value-pairs as string */
-type GrafanaLokiLabels = Partial<{
-    app: string;
-    job: string;
-    env: string;
-    level: string;
-    host: string;
-}> & {
-    [key: string]: any;
-};

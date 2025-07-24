@@ -12,3 +12,8 @@ documentation/
 *.tiff
 *.bmp
 CHEATSHEET.md
+development.ts
+ansi.ts
+emojis.ts
+index.ts
+types.ts
