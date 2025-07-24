@@ -4,6 +4,26 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.2.4] – 2025-07-24
+
+### ✨ Added
+
+- Emoji 🔺 "upload"
+- Emoji 🔻 "download"
+- Emoji 🫆 "fingerprint"
+- Emoji 🔐 "secure"
+- Introduced color and mode to context based logging allowing to switch colors and decide whether to use full frame layout, marking start and end of context only or not visually render any context styles at all
+
+### 🧼 Improved
+
+- Accidently had typescript ^5 in peerDependencies causing some conflicts/warnings when installing Loggify to projects
+
+### 🐛 Fixed
+
+- Fixed space on some emojis being rendered to close to the next informatio
+
+---
+
 ## [0.2.3] – 2025-07-21
 
 ### 🐛 Fixed

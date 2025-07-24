@@ -15,6 +15,9 @@ import util from 'util';
 //TODO: Work on Roadmap - Focus on GrafanaLoki integration
 //TODO: Documentation GrafanaLoki
 //TODO: Documentation Update usage ob LogTypeBadge - replace use emoji boolean and provide options off - tiny = 1 char, mini 2 chars eventuellay and full = 10 chars
+//TODO: Add emojis: create, add
+//TODO: Review log types and eventually improve/fix mapping
+//TODO: Move type definitions into seperate file
 
 /**
  * Console class
@@ -29,38 +32,8 @@ export default class Loggify {
     private logMemory: boolean = true;
     private logBuffer: any = new Map();
     private grafanaLoki: GrafanaLoki = {};
-    private ansi: any = {
-        // Colors
-        black: '\x1b[30m',
-        red: '\x1b[31m',
-        green: '\x1b[32m',
-        yellow: '\x1b[33m',
-        blue: '\x1b[34m',
-        magenta: '\x1b[35m',
-        cyan: '\x1b[36m',
-        white: '\x1b[37m',
-
-        // BRight colors
-        brightBlack: '\x1b[90m',
-        brightRed: '\x1b[91m',
-        brightGreen: '\x1b[92m',
-        brightYellow: '\x1b[93m',
-        brightBlue: '\x1b[94m',
-        brightMagenta: '\x1b[95m',
-        brightCyan: '\x1b[96m',
-        brightWhite: '\x1b[97m',
-
-        // Additional colors
-        orange: '\x1b[38;5;208m',
-        gray: '\x1b[90m',
-
-        // Special options
-        reset: '\x1b[0m',
-        bold: '\x1b[1m',
-        underline: '\x1b[4m',
-        inverse: '\x1b[7m'
-    };
-    private emoji: any = emojis;
+    private ansi = ansiCodes;
+    private emoji = emojis;
 
     /**
      * Initializing the log class to be used over console.log, as it should hopefully be faster and less resource 
@@ -396,6 +369,7 @@ export default class Loggify {
         let typeTag: any = '';
         let timestamp: string = '';
         let contextId: string | symbol | undefined = options?.context?.id || undefined;
+        const contextColor: string = options?.context?.color || this.logBuffer.get(contextId)?.color || 'orange';
         let callerInformation: string | undefined = undefined;
         let memory: string = '';
 
@@ -414,13 +388,25 @@ export default class Loggify {
 
         /** Check for context and initialize if needed */
         if (contextId) {
+            // Init
+            const contextMode: string = options?.context?.mode || 'full';
+
             if (!this.logBuffer.has(contextId)) {
                 // Initialize context in log buffer
-                this.logBuffer.set(contextId, { title: options?.context?.title, start: performance.now(), end: 0, logs: [] });
+                this.logBuffer.set(contextId, { title: options?.context?.title, mode: contextMode, color: contextColor, start: performance.now(), end: 0, logs: [] });
 
-                // Define context start element and push to  context in log buffer
-                const contextFrame: string = this.replaceAnsi(`[ansi:orange]╔═══════════════< Context start: ${options?.context?.title || `contextId: ${options?.context?.id?.toString()}`}[ansi:reset]`);
-                this.logBuffer.get(contextId)!.logs.push(`${contextFrame}\n`);
+                // Define context start element Full Header and push to context in log buffer
+                if (contextMode == 'full') {
+                    const contextFrame: string = this.replaceAnsi(`[ansi:${contextColor}]╔═══════════════< Context start: ${options?.context?.title || `contextId: ${options?.context?.id?.toString()}`}[ansi:reset]`);
+                    this.logBuffer.get(contextId)!.logs.push(`${contextFrame}\n`);
+                }
+
+                // Define context start element as small start End Title only and push to context in log buffer
+                else if (contextMode == 'startEnd') {
+                    const headerStart: string = this.replaceAnsi(`[ansi:${contextColor}]<───────────────| Context start: ${options?.context?.title || `contextId: ${options?.context?.id?.toString()}`}[ansi:reset]`);
+                    const headerEnd: string = this.replaceAnsi(`[ansi:${contextColor}] |───────────────>[ansi:reset]`);
+                    this.logBuffer.get(contextId)!.logs.push(`${headerStart}${headerEnd}\n`);
+                }
             }
 
             // Update end time - will always be overwritten with the last log
@@ -538,8 +524,14 @@ export default class Loggify {
 
             // Push to logBuffer: when contextId is set
             if (contextId) {
-                // Context frame
-                const contextFrame: string = this.replaceAnsi(`[ansi:orange]║[ansi:reset] `);
+                let contextFrame: string = '';
+                let contextMode: string = this.logBuffer.get(contextId)?.mode;
+
+                // Context Frame Full
+                if (contextMode == 'full') {
+                    // Context frame
+                    contextFrame = this.replaceAnsi(`[ansi:${contextColor}]║[ansi:reset] `);
+                }
 
                 // Push to log buffer
                 this.logBuffer.get(contextId)!.logs.push(`${contextFrame}${typeTag}${timestamp}${memory}${callerInformation}${message}\n`);
@@ -572,8 +564,15 @@ export default class Loggify {
 
             // Push to logBuffer: when contextId is set
             if (contextId) {
-                // Context frame
-                const contextFrame: string = this.replaceAnsi(`[ansi:orange]║[ansi:reset] `);
+                // init
+                let contextFrame: string = '';
+
+                // Frame mode Full
+                if (!options?.context?.mode || options.context.mode === 'full') {
+                    // Context frame
+                    contextFrame = this.replaceAnsi(`[ansi:orange]║[ansi:reset] `);
+                }
+
                 const linePrefix: string = `${contextFrame}         `;
 
                 const objectIndented = objectFormatted
@@ -702,6 +701,9 @@ export default class Loggify {
             return false;
         }
 
+        // Init - when ContextID exists
+        const contextColor: string = this.logBuffer.get(contextId)?.color || 'orange';
+
         // Do not render to console when discard is explicitly set
         if (options?.discardContextLog != true) {
             // Iterate through log records
@@ -709,9 +711,20 @@ export default class Loggify {
                 process.stdout.write(record);
             }
 
-            // Render context closing frame
-            const contextFrame: string = this.replaceAnsi(`[ansi:orange]╚═══════════════> Context end: ${this.logBuffer.get(contextId).title || `contextID: ${contextId}`}[ansi:reset] | [ansi:magenta]Duration:[ansi:reset] ${this.formatDuration(this.logBuffer.get(contextId).end - this.logBuffer.get(contextId).start)}\n`);
-            process.stdout.write(contextFrame);
+            // Frame mode Full
+            if (!this.logBuffer.get(contextId).mode || this.logBuffer.get(contextId).mode === 'full') {
+                // Render context closing frame
+                const contextFrame: string = this.replaceAnsi(`[ansi:${contextColor}]╚═══════════════> Context end: ${this.logBuffer.get(contextId).title || `contextID: ${contextId}`}[ansi:reset] | [ansi:magenta]Duration:[ansi:reset] ${this.formatDuration(this.logBuffer.get(contextId).end - this.logBuffer.get(contextId).start)}\n`);
+                process.stdout.write(contextFrame);
+            }
+
+            // Start End mode
+            else if (this.logBuffer.get(contextId).mode === 'startEnd') {
+                // Render context closing frame
+                const footerStart: string = this.replaceAnsi(`[ansi:${contextColor}]┌───────────────│ Context end:${this.logBuffer.get(contextId).title || `contextID: ${contextId}`}[ansi:reset]\n`);
+                const footerEnd: string = this.replaceAnsi(`[ansi:${contextColor}]└───────────────> [ansi:magenta]Duration:[ansi:reset] ${this.formatDuration(this.logBuffer.get(contextId).end - this.logBuffer.get(contextId).start)}\n`);
+                process.stdout.write(`${footerStart}${footerEnd}`);
+            }
         }
 
         // Delete context from log buffer after written output
@@ -727,7 +740,7 @@ export default class Loggify {
      * @returns {String} String with ANSI characters
      */
     replaceAnsi(str: string) {
-        str = str.replace(/\[ansi:(\w+)\]/g, (_, key) => this.ansi[key] || `[ansi:${key}]`);
+        str = str.replace(/\[ansi:(\w+)\]/g, (_, key: keyof typeof this.ansi) => this.ansi[key] || `[ansi:${key}]`);
         return str;
     }
 
@@ -749,7 +762,7 @@ export default class Loggify {
      * @returns {String} String with actual emoji icons
      */
     replaceEmojis(str: string) {
-        str = str.replace(/\[emoji:(\w+)\]/g, (_, key) => this.emoji[key] || `[emoji:${key}]`);
+        str = str.replace(/\[emoji:(\w+)\]/g, (_, key: keyof typeof this.emoji) => this.emoji[key] || `[emoji:${key}]`);
         return str;
     }
 
@@ -886,8 +899,8 @@ const emojis = {
     error: '❌',
 
     // Specials
-    connect: '🛜',
-    timer: '⏱️',
+    connect: '🛜 ',
+    timer: '⏱️ ',
     explosion: '💥',
     fuck: '🖕',
     shit: '💩',
@@ -895,20 +908,24 @@ const emojis = {
     rocket: '🚀',
     init: '🔸',
     finished: '🏁',
+    upload: '🔺',
+    download: '🔻',
+    fingerprint: '🫆 ',
+    secure: '🔐',
 
     // Hearts
-    heart: '❤️',
+    heart: '❤️ ',
     heartBroken: '💔',
-    heartMagenta: '🩷',
-    heartRed: '❤️',
+    heartMagenta: '🩷 ',
+    heartRed: '❤️ ',
     heartOrange: '🧡',
     heartYellow: '💛',
     heartGreen: '💚',
-    heartCyan: '🩵',
+    heartCyan: '🩵 ',
     heartBlue: '💙',
     heartPurple: '💜',
     heartBlack: '🖤',
-    heartGray: '🩶',
+    heartGray: '🩶 ',
     heartWhite: '🤍',
     heartBrown: '🤎',
 
@@ -935,6 +952,43 @@ const emojis = {
     squareBrown: '🟫'
 } as const;
 
+/** Ansi Codes */
+const ansiCodes = {
+    // Colors
+    black: '\x1b[30m',
+    red: '\x1b[31m',
+    green: '\x1b[32m',
+    yellow: '\x1b[33m',
+    blue: '\x1b[34m',
+    magenta: '\x1b[35m',
+    cyan: '\x1b[36m',
+    white: '\x1b[37m',
+
+    // Bright colors
+    brightBlack: '\x1b[90m',
+    brightRed: '\x1b[91m',
+    brightGreen: '\x1b[92m',
+    brightYellow: '\x1b[93m',
+    brightBlue: '\x1b[94m',
+    brightMagenta: '\x1b[95m',
+    brightCyan: '\x1b[96m',
+    brightWhite: '\x1b[97m',
+
+    // Additional colors
+    orange: '\x1b[38;5;208m',
+    gray: '\x1b[90m',
+
+    // Special options
+    reset: '\x1b[0m',
+    bold: '\x1b[1m',
+    dim: '\x1b[2m',
+    italic: '\x1b[3m',
+    underline: '\x1b[4m',
+    inverse: '\x1b[7m',
+    hidden: '\x1b[8m',
+    strikethrough: '\x1b[9m'
+} as const;
+
 /** Type Definitions */
 
 /**
@@ -947,6 +1001,9 @@ type LogLevel = 'off' | 'minimal' | 'full';
 
 /** Timestamp mode for logging */
 type LogTimestampMode = 'time' | 'dateTime';
+
+/** Context modes for context presentation */
+type ContextMode = 'off' | 'startEnd' | 'full';
 
 /**
  * Control the timestamp logging by either enabling or disabling it or decide whether you want time only be logged to
@@ -975,6 +1032,8 @@ interface LogConsoleOptions {
     context?: {
         id?: string | symbol;
         title?: string;
+        mode?: ContextMode;
+        color?: AnsiColorCodesOnlyDynamicTypes;
         readonly start?: number;
         readonly end?: number;
         readonly logs?: Array<string>;
@@ -998,12 +1057,16 @@ interface LogConsoleOptions {
 /** Fixed or static log types  */
 type FixedLogTypes = 'none' | 'okay' | 'success' | 'info' | 'debug' | 'warn' | 'warning' | 'error' | 'metrics';
 
-/** Dynamically build types based on the emoji ley object */
-type DynamicLogTypes = keyof typeof emojis;
+/** Dynamically build types based on the ansi code object  */
+type AnsiCodeDynamicTypes = keyof typeof ansiCodes;
+type AnsiColorCodesOnlyDynamicTypes = Exclude<keyof typeof ansiCodes, 'reset' | 'bold' | 'dim' | 'italic' | 'underline' | 'inverse' | 'hidden' | 'strikethrough'>;
+
+/** Dynamically build types based on the emoji object */
+type EmojiDynamicTypes = keyof typeof emojis;
 
 /** Build a custom type with static start and dynamic end */
 type CustomLogTypes = `custom=${string}`; // e.g. 'custom=TRIGGER', 'custom=IMPORT'
-type LogType = FixedLogTypes | DynamicLogTypes | CustomLogTypes;
+type LogType = FixedLogTypes | EmojiDynamicTypes | CustomLogTypes;
 
 /** Connection status */
 type ConnectionStatus = undefined | 'connecting' | 'connected' | 'error';
