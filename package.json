@@ -2,7 +2,7 @@
   "name": "@pbrgld/loggify",
   "description": "A lightweight, dependency-free logging library for Bun.js and Node.js – featuring emoji support, styled output, contextual logging, and high-performance stdout logging.",
   "license": "MIT",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "module": "dist/index.js",
   "author": {
     "name": "Paul Bergold",
@@ -19,6 +19,11 @@
     "url": "git+https://github.com/pbrgld/loggify.git"
   },
   "keywords": [
+    "context",
+    "contextual logging",
+    "contextId",
+    "log to memory",
+    "discard log on success",
     "loggify",
     "logger",
     "log",
@@ -32,9 +37,9 @@
     "build": "tsc"
   },
   "devDependencies": {
-    "@types/bun": "latest"
-  },
-  "peerDependencies": {
+    "@types/bun": "latest",
     "typescript": "^5"
-  }
+  },
+  "dependencies": {},
+  "peerDependencies": {}
 }
