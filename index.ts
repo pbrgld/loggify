@@ -6,8 +6,8 @@
 import os from 'os';
 import { basename } from "path";
 import util from 'util';
-import { ansiCodes } from './ansi';
-import { emojis } from './emojis';
+import { ansiCodes } from './ansi.js';
+import { emojis } from './emojis.js';
 import type { LogType, LogConsoleOptions, LogLevel, LogTypeBadge, GrafanaLoki, GrafanaLokiEntry, GrafanaLokiLabels, ConstructorOptions, ObjectSizeResponse, FlushOptions } from './types';
 
 /**
