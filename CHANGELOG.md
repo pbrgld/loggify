@@ -20,7 +20,7 @@ All notable changes to this project will be documented in this file.
 
 ### 🐛 Fixed
 
-- Fixed space on some emojis being rendered to close to the next informatio
+- Fixed space on some emojis being rendered to close to the next information
 
 ---
 
