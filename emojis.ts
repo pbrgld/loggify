@@ -8,11 +8,16 @@ export const emojis = {
     success: '✅',
     info: 'ℹ️ ',
     warn: '⚠️ ',
+    warning: '⚠️ ',
     error: '❌',
+    create: '✨',
+    add: '➕',
+    remove: '➖',
 
     // Specials
     connect: '🛜 ',
     timer: '⏱️ ',
+    metrics: '⏱️ ',
     explosion: '💥',
     fuck: '🖕',
     shit: '💩',
@@ -24,6 +29,7 @@ export const emojis = {
     download: '🔻',
     fingerprint: '🫆 ',
     secure: '🔐',
+    sebug: '🐞',
 
     // Hearts
     heart: '❤️ ',

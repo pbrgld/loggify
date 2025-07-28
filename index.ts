@@ -18,9 +18,6 @@ import type { LogType, LogConsoleOptions, LogLevel, LogTypeBadge, GrafanaLoki, G
 //TODO: Work on Roadmap - Focus on GrafanaLoki integration
 //TODO: Documentation GrafanaLoki
 //TODO: Documentation Update usage ob LogTypeBadge - replace use emoji boolean and provide options off - tiny = 1 char, mini 2 chars eventuellay and full = 10 chars
-//TODO: Add emojis: create, add
-//TODO: Review log types and eventually improve/fix mapping
-
 
 /**
  * Console class
@@ -445,13 +442,17 @@ export default class Loggify {
             // Build Tags
             if (type == 'okay') typeTag = `[ansi:green][ansi:inverse]${spacer}`;
             else if (type == 'success') typeTag = `[ansi:green][ansi:inverse]${spacer}`;
-            else if (type == 'info') typeTag = `[ansi:white][ansi:inverse]${spacer}`;
+            else if (type == 'info') typeTag = `[ansi:cyan][ansi:inverse]${spacer}`;
             else if (type == 'debug') typeTag = `[ansi:blue][ansi:inverse]${spacer}`;
             else if (type == 'warn' || type == 'warning') typeTag = `[ansi:yellow][ansi:inverse]${spacer}`;
             else if (type == 'error') typeTag = `[ansi:red][ansi:inverse]${spacer}`;
+            else if (type == 'create' || type == 'add') typeTag = `[ansi:green][ansi:inverse]${spacer}`;
+            else if (type == 'remove') typeTag = `[ansi:brightRed][ansi:inverse]${spacer}`;
             else if (type == 'metrics') typeTag = `[ansi:brightMagenta][ansi:inverse]${spacer}`;
+            else if (type == 'init') typeTag = `[ansi:orange][ansi:inverse]${spacer}`;
+            else if (type == 'finished') typeTag = `[ansi:gray][ansi:inverse]${spacer}`;
             else if (type?.startsWith('custom=')) typeTag = `${type.split('=')[1]}${spacer}`;
-            else if (type) typeTag = `[ansi:gray][ansi:inverse]${spacer}`;
+            else if (type) typeTag = `${spacer}`;
             else typeTag = spacer;
 
             // Replace ANSI colors and Styles
@@ -466,13 +467,18 @@ export default class Loggify {
             // Build Tags
             if (type == 'okay') typeTag = '[ansi:green][ansi:inverse]OKAY';
             else if (type == 'success') typeTag = '[ansi:green][ansi:inverse]SUCCESS';
-            else if (type == 'info') typeTag = '[ansi:white][ansi:inverse]INFO';
+            else if (type == 'info') typeTag = '[ansi:cyan][ansi:inverse]INFO';
             else if (type == 'debug') typeTag = '[ansi:blue][ansi:inverse]DEBUG';
             else if (type == 'warn' || type == 'warning') typeTag = '[ansi:yellow][ansi:inverse]WARNING';
             else if (type == 'error') typeTag = '[ansi:red][ansi:inverse]ERROR';
+            else if (type == 'create') typeTag = '[ansi:green][ansi:inverse]CREATE';
+            else if (type == 'add') typeTag = '[ansi:green][ansi:inverse]Add';
+            else if (type == 'remove') typeTag = '[ansi:brightRed][ansi:inverse]REMOVE';
             else if (type == 'metrics') typeTag = '[ansi:brightMagenta][ansi:inverse]METRICS';
+            else if (type == 'init') typeTag = '[ansi:orange][ansi:inverse]INIT';
+            else if (type == 'finished') typeTag = '[ansi:gray][ansi:inverse]FINISHED';
             else if (type?.startsWith('custom=')) typeTag = `${type.split('=')[1]}${type.split('=')[2]}`;
-            else if (type) typeTag = '[ansi:gray][ansi:inverse]UNKNOWN';
+            else if (type) typeTag = '';
             else typeTag = '';
 
             // Replace ANSI colors and Styles
@@ -888,5 +894,4 @@ export default class Loggify {
 
         return { size, bytes, chars }
     }
-
 }

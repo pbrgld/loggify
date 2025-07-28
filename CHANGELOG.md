@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.3] – 2025-07-28
+
+### ✨ Added
+
+- Emoji ✨ "create"
+- Emoji ➕ "add"
+- Emoji ➖ "remove"
+- Emoji 🐞 "debug"
+
+### 🧼 Improved
+
+- Optimized the color schema for log types showing the same colors for tiny, mini and full
+- Optimized file structure by using asset files
+
 ---
 
 ## [0.2.4] – 2025-07-24
