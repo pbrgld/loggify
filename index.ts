@@ -14,10 +14,8 @@ import type { LogType, LogConsoleOptions, LogLevel, LogTypeBadge, GrafanaLoki, G
  * Todo section
  */
 //TODO: Prepare everything to make everything v1.0.0 ready
-//TODO: Append to file? Not sure if this is needed (Wait for community to request)
-//TODO: Work on Roadmap - Focus on GrafanaLoki integration
-//TODO: Documentation GrafanaLoki
 //TODO: Documentation Update usage ob LogTypeBadge - replace use emoji boolean and provide options off - tiny = 1 char, mini 2 chars eventuellay and full = 10 chars
+//TODO: Overwrite callerStackLevel on console method - top level is for instance 3 but on method level you need to overwrite with 2 to get to correct source - must be documented - overwriteCallerStackLevel
 
 /**
  * Console class
@@ -64,14 +62,14 @@ export default class Loggify {
 
     /** Logs the current initialization and setup of Loggify */
     logInit() {
-        this.console(`╭ Loggify (@pbrgld/loggify) loaded [ansi:reset]`, `init`, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 2 });
-        this.console(`├─── Log level: [ansi:magenta]${this.logLevel}[ansi:reset]`, undefined, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 2 });
-        this.console(`├─── Log timestamp: [ansi:magenta]${this.logTimestamp}[ansi:reset]`, undefined, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 2 });
-        if (this.logTimestamp) this.console(`├─── Timestamp format: [ansi:magenta]${this.logTimestampType}[ansi:reset]`, undefined, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 2 });
-        this.console(`├─── Log type badge: [ansi:magenta]${this.logTypeBadge}[ansi:reset]`, undefined, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 2 });
-        this.console(`├─── Log caller information: [ansi:magenta]${this.logCallerInformation}[ansi:reset]`, undefined, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 2 });
-        this.console(`├─── Default caller information level: [ansi:magenta]${this.logCallerCallStackLevel}[ansi:reset]`, undefined, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 2 });
-        this.console(`╰─── Log memory usage: [ansi:magenta]${this.logMemory}[ansi:reset]`, undefined, { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 2 });
+        this.console(`╭ Loggify (@pbrgld/loggify) loaded [ansi:reset]`, `init`, { logLevel: 'off', callerInformation: { overwriteCallerStackLevel: this.logCallerCallStackLevel + 2 } });
+        this.console(`├─── Log level: [ansi:magenta]${this.logLevel}[ansi:reset]`, undefined, { logLevel: 'off', callerInformation: { overwriteCallerStackLevel: this.logCallerCallStackLevel + 2 } });
+        this.console(`├─── Log timestamp: [ansi:magenta]${this.logTimestamp}[ansi:reset]`, undefined, { logLevel: 'off', callerInformation: { overwriteCallerStackLevel: this.logCallerCallStackLevel + 2 } });
+        if (this.logTimestamp) this.console(`├─── Timestamp format: [ansi:magenta]${this.logTimestampType}[ansi:reset]`, undefined, { logLevel: 'off', callerInformation: { overwriteCallerStackLevel: this.logCallerCallStackLevel + 2 } });
+        this.console(`├─── Log type badge: [ansi:magenta]${this.logTypeBadge}[ansi:reset]`, undefined, { logLevel: 'off', callerInformation: { overwriteCallerStackLevel: this.logCallerCallStackLevel + 2 } });
+        this.console(`├─── Log caller information: [ansi:magenta]${this.logCallerInformation}[ansi:reset]`, undefined, { logLevel: 'off', callerInformation: { overwriteCallerStackLevel: this.logCallerCallStackLevel + 2 } });
+        this.console(`├─── Default caller information level: [ansi:magenta]${this.logCallerCallStackLevel}[ansi:reset]`, undefined, { logLevel: 'off', callerInformation: { overwriteCallerStackLevel: this.logCallerCallStackLevel + 2 } });
+        this.console(`╰─── Log memory usage: [ansi:magenta]${this.logMemory}[ansi:reset]`, undefined, { logLevel: 'off', callerInformation: { overwriteCallerStackLevel: this.logCallerCallStackLevel + 2 } });
     }
 
     /** Method to set/change the log level */
@@ -82,13 +80,13 @@ export default class Loggify {
         // Log Level has been changed
         if (currentLogLevel != logLevel) {
             this.logLevel = logLevel;
-            this.console(`Loggify @LogLevel: "[ansi:brightBlue]${currentLogLevel}[ansi:reset]" => "[ansi:brightGreen]${this.logLevel}[ansi:reset]"`, 'info', { logLevel: 'off', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 1 });
+            this.console(`Loggify @LogLevel: "[ansi:brightBlue]${currentLogLevel}[ansi:reset]" => "[ansi:brightGreen]${this.logLevel}[ansi:reset]"`, 'info', { logLevel: 'off', callerInformation: { overwriteCallerStackLevel: this.logCallerCallStackLevel + 1 } });
             return true;
         }
 
         // No change required - new value equals current value
         else {
-            this.console(`Loggify @LogLevel: already set to "${logLevel}"`, 'warn', { logLevel: 'minimal', customLogCallerCallStackLevel: this.logCallerCallStackLevel + 1 });
+            this.console(`Loggify @LogLevel: already set to "${logLevel}"`, 'warn', { logLevel: 'minimal', callerInformation: { overwriteCallerStackLevel: this.logCallerCallStackLevel + 1 } });
             return false;
         }
     }
@@ -502,9 +500,16 @@ export default class Loggify {
 
         /** Caller information */
         if (this.logCallerInformation) {
-            const location = this.getCallerLocation(options?.customLogCallerCallStackLevel || this.logCallerCallStackLevel); // Set the level how deep you want look-up the caller. usualy you would be looking for level 2 when initialized in each file and 3 when using a global or one-instance approach
-            if (!location) return false;
-            callerInformation = this.replaceAnsi(`[ansi:blue]${basename(`${location?.file}`)}[ansi:reset]:[ansi:yellow]${location.line}[ansi:reset]${location?.function ? `[ansi:brightMagenta](Func:${location.function})[ansi:reset]` : ''}`) + ' ';
+            const location = this.getCallerLocation(options?.callerInformation?.overwriteCallerStackLevel || this.logCallerCallStackLevel); // Set the level how deep you want look-up the caller. usualy you would be looking for level 2 when initialized in each file and 3 when using a global or one-instance approach
+            //* Caller information found
+            if (location) {
+                let functionInfo: string = '';
+                if (location?.function && !options?.callerInformation?.hideFunctionInfo) functionInfo = `[ansi:brightMagenta](Func:${location.function})[ansi:reset]`;
+                callerInformation = this.replaceAnsi(`[ansi:blue]${basename(`${location?.file}`)}[ansi:reset]:[ansi:yellow]${location.line}[ansi:reset]${functionInfo}`) + ' ';
+            }
+            //! No caller information found
+            else callerInformation = this.replaceAnsi('[ansi:red]Caller unknown![ansi:reset] ');
+            //° Caller information disabled
         } else callerInformation = '';
 
         /** Memory usage */
