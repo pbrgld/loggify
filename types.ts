@@ -43,7 +43,10 @@ export interface LogConsoleOptions {
     logLevel?: LogLevel;
 
     // Custom caller stack level
-    customLogCallerCallStackLevel?: number;
+    callerInformation?: {
+        overwriteCallerStackLevel?: number;
+        hideFunctionInfo?: boolean;
+    }
 
     // Context
     context?: {

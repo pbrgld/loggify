@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+---
+
+## [0.4.0] – 2025-07-29
+
+### ✨ Added
+
+- When using the caller information you can now disable the function information
+
+### ⚠️ Breaking
+
+- ![breaking](https://img.shields.io/badge/change-breaking-red)  
+  The caller level possibilities have been extended and thus the options have been rebuild as an object inside the console options
+
+---
+
 ## [0.3.3] – 2025-07-28
 
 ### ✨ Added

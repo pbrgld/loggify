@@ -5,7 +5,12 @@
 import Loggify from "./index";
 
 // Initialize class
-const loggify: Loggify = new Loggify({ logTypeBadge: 'full' });
+const loggify: Loggify = new Loggify({
+    logTypeBadge: 'tiny',
+    logMemoryUsage: false,
+    logCallerInformation: false
+
+});
 
 // Emoji Test
 // Common
@@ -84,3 +89,9 @@ loggify.console(`Emoji Test remove`, 'remove', { context: { id: 'dev' } });
 loggify.flush('dev');
 
 loggify.console(`NoLog`, 'heartPurple', { grafanaLoki: {} });
+
+function test(): void {
+    loggify.console(`This is a log from inside the function`, 'create', { callerInformation: { overwriteCallerStackLevel: 0 } });
+}
+
+test();

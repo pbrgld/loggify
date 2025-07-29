@@ -316,6 +316,59 @@ loggify.flush(uniqueContextId);
 loggify.flush(contextId, { discardContextLog: true });
 ```
 
+### Grafana Loki integration
+
+**Loggify** comes with an integration to [Grafana Loki ↗](https://example.com). Both, Grafana Loki and Loggify make it up to a perfect match. While **Loggify** shows you nicely and colourful logging information in your terminal of your application while things happen, Grafana Loki allows you to browse through the logs in a very nice way and query over the data you've logged, using **Loggify**.
+
+![Example: Grafana Loki](https://raw.githubusercontent.com/pbrgld/loggify/main/documentation/exampleGrafanaLoki.png)
+
+```ts
+const loggify: Loggify = new Loggify({
+  logTypeBadge: "tiny",
+  logMemoryUsage: false,
+  logCallerInformation: false,
+  grafanaLoki: {
+    hostname: "urlTo.grafanaLoki.server",
+    port: 3100,
+    isSecure: true,
+    auth: {
+      type: "basic",
+      user: "username",
+      pass: "securePassword",
+    },
+    labels: {
+      app: "nameOfYouApp",
+      env: "PROD",
+      host: "this",
+      job: "logger",
+      level: "info",
+    },
+  },
+});
+```
+
+In order to enable the GrafanaLoki integration, simply pass some data in the constructor of the **Loggify** class, such as:
+
+- hostname (alternatively can also be IP address)
+- port (default: 3100)
+- isSecure (true should be used for HTTPS connections)
+- auth
+  - type (can be none, basic or bearer)
+  - user (used for basic auth)
+  - pass (used for basic auth)
+  - bearerToken (when using bearer token)
+- labels (optional object that allows you to define labels globally)
+
+> 🧠 **Note:** About labels
+>
+> First of all the common recommendation for GrafanaLoki is not to use more than 5 labels in total, if possible. Second, the labels you define globally for GrafanaLoki within the constructor, you can overwrite any time on console level.
+
+> ⚠️ **Important:** Do not push to GrafanaLoki
+>
+> There is some information that you wish not to push to GrafanaLoki and it should only be part of the local logging in the terminal? No problem, simply add `grafanaLoki: { doNotPush: true }` to the `LogConsoleOptions`.
+
+Just to make the information sort of complete, to `grafanaLoki` object on console method within `LogConsoleOptions`, you can of course overwrite the level by using `levelOverwrite` and add additional labels on the detailed level or overwrite globally defined labels by using the `labels` object.
+
 ## 🧭 Project Philosophy & Community Focus
 
 This is the **first package** I’m sharing with the community – and it’s something I deeply care about.
@@ -383,6 +436,13 @@ The following improvements are planned to make Loggify even more powerful and fl
 ## 📄 Changelog
 
 You can find all notable changes in the [Changelog](https://raw.githubusercontent.com/pbrgld/loggify/main/CHANGELOG.md).
+
+## 💬 Join the Community
+
+Have questions about Loggify, want to report an issue, or just exchange ideas with other developers?  
+Join our official [Discord server](https://discord.gg/tfTVbETMB9) to connect, discuss features, and stay up to date with the latest developments.
+
+[![Join Discord](https://img.shields.io/discord/1399816272958459984?label=Join%20us%20on%20Discord&logo=discord&color=7289DA&logoColor=white)](https://discord.gg/tfTVbETMB9)
 
 ## 📝 License
 
