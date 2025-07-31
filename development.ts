@@ -6,9 +6,9 @@ import Loggify from "./index";
 
 // Initialize class
 const loggify: Loggify = new Loggify({
-    logTypeBadge: 'tiny',
+    logTypeBadge: 'emoji',
     logMemoryUsage: false,
-    logCallerInformation: false
+    logCallerInformation: true
 
 });
 
@@ -40,6 +40,7 @@ loggify.console(`Emoji test => download`, 'download');
 loggify.console(`Emoji test => fingerprint`, 'fingerprint');
 loggify.console(`Emoji test => secure`, 'secure');
 loggify.console(`Emoji test => debug`, 'debug');
+loggify.console(`Emoji test => smiley`, 'smiley');
 
 // Hearts
 loggify.console(`Emoji test => heart`, 'heart');
@@ -79,7 +80,7 @@ loggify.console(`Emoji test => squareBlack`, 'squareBlack');
 loggify.console(`Emoji test => squareWhite`, 'squareWhite');
 loggify.console(`Emoji test => squareBrown`, 'squareBrown');
 
-loggify.console(`Test Object`, 'heartGreen', { context: { id: 'dev', color: 'brightWhite', mode: 'full' } }, { name: 'Paul', age: 41 });
+loggify.console(`Test Object`, 'heartGreen', { context: { id: 'dev', color: 'brightCyan', mode: 'full' } }, { name: 'Paul', age: 41 });
 
 loggify.console(`Emoji Test create`, 'create', { context: { id: 'dev' } });
 loggify.console(`Emoji Test add`, 'add', { context: { id: 'dev' } });
@@ -90,8 +91,10 @@ loggify.flush('dev');
 
 loggify.console(`NoLog`, 'heartPurple', { grafanaLoki: {} });
 
-function test(): void {
+function myFunction(): void {
     loggify.console(`This is a log from inside the function`, 'create', { callerInformation: { overwriteCallerStackLevel: 0 } });
+    loggify.console(`For this log the function information has been hidden`, 'info', { callerInformation: { overwriteCallerStackLevel: 0, hideFunctionInfo: true } });
 }
-
-test();
+myFunction();
+loggify.console(`Thank you for chosing Loggify [emoji:smiley]      [[ansi:cyan]logTypeBadge:[ansi:reset] [ansi:orange]"emoji"[ansi:reset]]`, 'success');
+loggify.console(`Use custom log badge types`, 'custom=[ansi:orange][ansi:inverse]=myTag');

@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.4.1] – 2025-07-31
+
+### ✨ Added
+
+- Emoji 🙂 "smiley"
+
+### 🧼 Improved
+
+- Space between emoji for log type metrics and the timestamp information
+
+---
+
 ## [0.4.0] – 2025-07-29
 
 ### ✨ Added

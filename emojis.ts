@@ -29,7 +29,8 @@ export const emojis = {
     download: '🔻',
     fingerprint: '🫆 ',
     secure: '🔐',
-    sebug: '🐞',
+    debug: '🐞',
+    smiley: '🙂',
 
     // Hearts
     heart: '❤️ ',

@@ -14,8 +14,6 @@ import type { LogType, LogConsoleOptions, LogLevel, LogTypeBadge, GrafanaLoki, G
  * Todo section
  */
 //TODO: Prepare everything to make everything v1.0.0 ready
-//TODO: Documentation Update usage ob LogTypeBadge - replace use emoji boolean and provide options off - tiny = 1 char, mini 2 chars eventuellay and full = 10 chars
-//TODO: Overwrite callerStackLevel on console method - top level is for instance 3 but on method level you need to overwrite with 2 to get to correct source - must be documented - overwriteCallerStackLevel
 
 /**
  * Console class
@@ -418,11 +416,8 @@ export default class Loggify {
 
         /** Log type badge is set to use Emoji */
         else if (this.logTypeBadge === 'emoji') {
-            // Specials & overwrites
-            if (type === 'metrics') typeTag = `${this.emoji.timer} `;
-
             // Determine correct emoji from Emoji object to render
-            else typeTag = Object.entries(this.emoji).find(([k]) => k === type)?.[1];
+            typeTag = Object.entries(this.emoji).find(([k]) => k === type)?.[1];
 
             // When no matcing emoji could be determined
             if (!typeTag) typeTag = '  '; // No emoji aparently must be 2 blank spaces

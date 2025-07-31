@@ -131,7 +131,7 @@ However, if you prefer a completely silent initialization, you can disable this 
 const loggify: Loggify = new Loggify({ initSilent: true });
 ```
 
-![Output: removed caller information and memory usage via constructor](https://raw.githubusercontent.com/pbrgld/loggify/main/documentation/constructorInitSilent.png)
+![Output: hide init information](https://raw.githubusercontent.com/pbrgld/loggify/main/documentation/constructorInitSilent.png)
 
 ### Text coloring and styling and using emojis
 
@@ -163,6 +163,36 @@ loggify.console(
 ![Output: Color, style and emoji logging](https://raw.githubusercontent.com/pbrgld/loggify/main/documentation/caseColorStyleEmoji.png)
 
 This feature gives you powerful control over the visual appearance of your logs — without needing external dependencies or manual ANSI codes.
+
+### Log type badge
+
+For best log experience, based on the system you app will be running, choose from 5 modes that allow you how to handle log type information:
+
+1. off = no information/indicator at all is printed
+2. tiny = first char of the log line, before timestamp is printed, shows a color indicator
+3. mini = same as tiny, but instead of only 1 char the first three spaces are indicating the log type
+4. full = is using the space of 10 characters to print color as well as log type as a text
+5. emoji = use the space of only the first char in most efficient way, by printing an emoji. Remark: this might not be working on all systems you are using **Loggify**
+
+![Output: Color, style and emoji logging](https://raw.githubusercontent.com/pbrgld/loggify/main/documentation/exampleLogTypeBadge.png)
+
+#### Custom log type badge
+
+You want to use your own custom log type badge? No problem! Simply build the string for the log type option using the following syntax:
+
+1. start with custom
+2. use the ANSI color & styling mothod e.g. [ansi:orange]
+3. give your log type badge a name
+4. concatenate all three information with a =
+
+```ts
+loggify.console(
+  `Use custom log badge types`,
+  "custom=[ansi:orange][ansi:inverse]=myTag"
+);
+```
+
+![Output: Custom log type badge](https://raw.githubusercontent.com/pbrgld/loggify/main/documentation/exampleLogTypeBadgeCustom.png)
 
 ### Object Logging Made Clear and Informative
 
@@ -318,7 +348,7 @@ loggify.flush(contextId, { discardContextLog: true });
 
 ### Grafana Loki integration
 
-**Loggify** comes with an integration to [Grafana Loki ↗](https://example.com). Both, Grafana Loki and Loggify make it up to a perfect match. While **Loggify** shows you nicely and colourful logging information in your terminal of your application while things happen, Grafana Loki allows you to browse through the logs in a very nice way and query over the data you've logged, using **Loggify**.
+**Loggify** comes with an integration to [Grafana Loki ↗](https://grafana.com/oss/loki/). Both, Grafana Loki and Loggify make it up to a perfect match. While **Loggify** shows you nicely and colourful logging information in your terminal of your application while things happen, Grafana Loki allows you to browse through the logs in a very nice way and query over the data you've logged, using **Loggify**.
 
 ![Example: Grafana Loki](https://raw.githubusercontent.com/pbrgld/loggify/main/documentation/exampleGrafanaLoki.png)
 
@@ -368,6 +398,26 @@ In order to enable the GrafanaLoki integration, simply pass some data in the con
 > There is some information that you wish not to push to GrafanaLoki and it should only be part of the local logging in the terminal? No problem, simply add `grafanaLoki: { doNotPush: true }` to the `LogConsoleOptions`.
 
 Just to make the information sort of complete, to `grafanaLoki` object on console method within `LogConsoleOptions`, you can of course overwrite the level by using `levelOverwrite` and add additional labels on the detailed level or overwrite globally defined labels by using the `labels` object.
+
+### Caller information handling
+
+When working with bigger projects or guest working in bogger projects that you are not familar with, especially when there is a lot of asynchronus code, the caller information becomes quite handy, because it shows you from which file and line in code the output has been initiated from - also the function name helps to clearly identify its origin.
+
+#### Overwrite caller stack level
+
+Depending on your setup, it may be required that you on log detail level overwrite the parent or default caller stack level. For instance you initiate the loggify instance in a top code file and export the instance to use it in child files, you may want to use anoter call stack level to extract the informatation from where the loggify.console() method has been invoked. With the overwriteCallerStackLevel you can influence the information individually for each individual call of loggify.console().
+
+```ts
+loggify.console(`This is a log from inside the function`, "create", {
+  callerInformation: { overwriteCallerStackLevel: 0 },
+});
+```
+
+![Output: Caller Information](https://raw.githubusercontent.com/pbrgld/loggify/main/documentation/caseCallerInformation.png)
+
+> 🧠 **Note:** Hide function
+>
+> Don't want to print the function? - When ever within the callstack a function is identified, by default the information is printed on in the log as part of the caller information. If for what reason ever you do not want to print this information, use `hideFunctionInfo: true` to hide it.
 
 ## 🧭 Project Philosophy & Community Focus
 
