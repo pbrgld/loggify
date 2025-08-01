@@ -74,6 +74,19 @@ export interface LogConsoleOptions {
     }
 }
 
+/** Banner content defines which and how content should be used within banner */
+export interface BannerContent {
+    title?: string;
+    description?: string;
+}
+
+/** Banner options allows or empowers you to modify banner rendering, e.g. colors or frame options */
+export interface BannerOptions {
+    frame?: {
+        color?: AnsiColorCodesOnlyDynamicTypes
+    }
+}
+
 /** Fixed or static log types  */
 export type FixedLogTypes = 'none' | 'okay' | 'success' | 'info' | 'debug' | 'warn' | 'warning' | 'error' | 'metrics';
 

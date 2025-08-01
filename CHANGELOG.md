@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.5.0] – 2025-08-01
+
+### ✨ Added
+
+- Loggify banner method allows to render a banner - a frame containing a title and description
+
+---
+
 ## [0.4.1] – 2025-07-31
 
 ### ✨ Added

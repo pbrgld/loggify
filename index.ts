@@ -8,12 +8,16 @@ import { basename } from "path";
 import util from 'util';
 import { ansiCodes } from './ansi.js';
 import { emojis } from './emojis.js';
-import type { LogType, LogConsoleOptions, LogLevel, LogTypeBadge, GrafanaLoki, GrafanaLokiEntry, GrafanaLokiLabels, ConstructorOptions, ObjectSizeResponse, FlushOptions } from './types';
+import type { LogType, LogConsoleOptions, LogLevel, LogTypeBadge, GrafanaLoki, GrafanaLokiEntry, GrafanaLokiLabels, ConstructorOptions, ObjectSizeResponse, FlushOptions, BannerOptions, BannerContent } from './types';
 
 /**
  * Todo section
  */
 //TODO: Prepare everything to make everything v1.0.0 ready
+//TODO: [WIP]: Banner
+//TODO: [WIP]: Banner, add space for description - 1 chart between description and frame
+//TODO: [WIP]: Banner: extract ansi-style&code started and start with it in next line, if an [ansi:reset] had not been thrown
+
 
 /**
  * Console class
@@ -625,6 +629,44 @@ export default class Loggify {
         }
     }
 
+    banner(content: string | BannerContent, options?: BannerOptions) {
+        // Init
+        const currentWidth: number = process.stdout.columns;
+        let frameLineTitle: string = '';
+        let frameLineDescription: string | undefined = undefined;
+        let descriptionLines: Array<string> = [];
+        let descriptionContent;
+
+        // Frame elements
+        const frameTop: string = this.replaceAnsi(`[ansi:${options?.frame?.color}]╒${'═'.repeat(currentWidth - 2)}╕[ansi:reset]`);
+        const frameLineSpacer: string = this.replaceAnsi(`[ansi:${options?.frame?.color}]│[ansi:reset]${' '.repeat(currentWidth - 2)}[ansi:${options?.frame?.color}]│[ansi:reset]`);
+        const frameBottom: string = this.replaceAnsi(`[ansi:${options?.frame?.color}]╘${'═'.repeat(currentWidth - 2)}╛[ansi:reset]`);
+
+        // Upgrade content string to object
+        if (typeof content === 'string') content = { title: content };
+
+        // Build title
+        if (content.title) {
+            const titleContent: string = this.replaceAnsi(this.replaceEmojis(content.title));
+            frameLineTitle = this.replaceAnsi(`[ansi:${options?.frame?.color}]│[ansi:reset]${this.padEndAnsiSafe(titleContent, currentWidth - 2, ' ', true)}[ansi:${options?.frame?.color}]│[ansi:reset]`);
+        }
+        else frameLineTitle = frameLineSpacer
+
+        // Build description
+        if (content.description) {
+            descriptionLines = this.splitTextByNewLineLength(this.replaceAnsi(this.replaceEmojis(content.description.replaceAll('\t', `[ansi:hidden]${' '.repeat(4)}[ansi:reset]`))), currentWidth - 4, true);
+
+            // Iterate through description lines
+            for (const line of descriptionLines) {
+                if (frameLineDescription) frameLineDescription = `${frameLineDescription}\n${this.replaceAnsi(`[ansi:${options?.frame?.color}]│[ansi:reset] ${this.padEndAnsiSafe(line, currentWidth - 4)} [ansi:${options?.frame?.color}]│[ansi:reset]`)}`;
+                else frameLineDescription = `${this.replaceAnsi(`[ansi:${options?.frame?.color}]│[ansi:reset] ${this.padEndAnsiSafe(line, currentWidth - 4)} [ansi:${options?.frame?.color}]│[ansi:reset]`)}`;
+            }
+        }
+
+        // Render banner
+        process.stdout.write(`${frameTop}\n${frameLineTitle}\n${frameLineDescription ? `${frameLineSpacer + frameLineDescription + frameLineSpacer}\n` : ''}${frameBottom}\n`);
+    }
+
     /**
      * A function that uses the trick to throw an error to access the call stack and extract the levels of them
      * @param {number} depth Put in the number of the level you want to scan 
@@ -893,5 +935,95 @@ export default class Loggify {
         chars = objectStringified.length
 
         return { size, bytes, chars }
+    }
+
+    //° WIP - to be optimized
+    splitTextByNewLineLength(text: string, maxLength: number, wordWrap: boolean = false): Array<string> {
+        const ansiRegex = /\x1B\[[0-9;]*m/g;
+
+        // Determine visible length
+        function visibleLength(str: string) {
+            return str.replace(ansiRegex, '').length;
+        }
+
+        // Cuts visible characters in consideration to ANSI
+        function sliceVisible(string: string, start: number, end: number) {
+            let result: string = '';
+            let visible: number = 0;
+            const matches = [...string.matchAll(ansiRegex)];
+            let i: number = 0;
+            let skip: number = 0;
+
+            while (i < string.length && visible < end) {
+                const nextAnsi = matches.find(m => m.index === i);
+                if (nextAnsi) {
+                    result += nextAnsi[0];
+                    i += nextAnsi[0].length;
+                    continue;
+                }
+
+                if (visible >= start) {
+                    result += string[i];
+                }
+                i++;
+                visible++;
+            }
+            return result;
+        }
+
+        const lines: Array<string> = [];
+        const rawLines: Array<string> = text.split('\n');
+
+        for (const rawLine of rawLines) {
+            let line = rawLine.trim();
+
+            if (!wordWrap) {
+                let visible = visibleLength(line);
+                let start = 0;
+
+                while (visible > maxLength) {
+                    const part = sliceVisible(line, start, start + maxLength);
+                    lines.push(part);
+                    start += maxLength;
+                    visible -= maxLength;
+                }
+
+                const remaining = sliceVisible(line, start, start + maxLength);
+                if (visibleLength(remaining) > 0) lines.push(remaining);
+            } else {
+                // Word wrap
+                const words = line.match(/\S+\s*/g) || [];
+                let buffer = "";
+
+                for (const word of words) {
+                    const testLine = buffer + word;
+                    if (visibleLength(testLine) <= maxLength) {
+                        buffer = testLine;
+                    } else {
+                        if (visibleLength(buffer) > 0) lines.push(buffer);
+                        // In case the single or actual word exceeds maxLength
+                        if (visibleLength(word) > maxLength) {
+                            let start = 0;
+                            let visible = visibleLength(word);
+                            while (visible > maxLength) {
+                                const part = sliceVisible(word, start, start + maxLength);
+                                lines.push(part);
+                                start += maxLength;
+                                visible -= maxLength;
+                            }
+                            buffer = sliceVisible(word, start, start + maxLength);
+                        } else {
+                            buffer = word;
+                        }
+                    }
+                }
+
+                if (visibleLength(buffer) > 0) {
+                    lines.push(buffer);
+                }
+            }
+        }
+
+        return lines;
     }
 }

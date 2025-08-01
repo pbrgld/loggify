@@ -98,3 +98,11 @@ function myFunction(): void {
 myFunction();
 loggify.console(`Thank you for chosing Loggify [emoji:smiley]      [[ansi:cyan]logTypeBadge:[ansi:reset] [ansi:orange]"emoji"[ansi:reset]]`, 'success');
 loggify.console(`Use custom log badge types`, 'custom=[ansi:orange][ansi:inverse]=myTag');
+
+loggify.banner(`[emoji:star] I am some simple plain text to be printed`, { frame: { color: "green" } });
+loggify.banner({
+    title: '[emoji:okay] I am a banner [emoji:warn]', description: `[ansi:blue]This is some text that should be rendered.[ansi:reset] Lets get some new stuff into this:
+    \t1. this
+    \t2. that
+    \t3. and that
+Finally there is some additional line break to be added\nOther things may come equally. And now we need to fill in a really long text to make sure the linebreak feature is correctly implemented. Well, in the end it should look great, or? What do you think this will look like, [ansi:yellow]if you do not put in any effort to make this a nice and neat looking feature? Well, in the end this is mostly done for myself, but hey, I am the most important person to bring this joy of using Loggify to and I am very happy for every other person to use it as well, but I [ansi:reset]have to like and love it. If someone reads this, this is just some silly text to implement the line break feature [emoji:smiley]` }, { frame: { color: "red" } });
