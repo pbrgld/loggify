@@ -98,6 +98,7 @@ function myFunction(): void {
 myFunction();
 loggify.console(`Thank you for chosing Loggify [emoji:smiley]      [[ansi:cyan]logTypeBadge:[ansi:reset] [ansi:orange]"emoji"[ansi:reset]]`, 'success');
 loggify.console(`Use custom log badge types`, 'custom=[ansi:orange][ansi:inverse]=myTag');
+loggify.banner(`Default banner without any additional config`);
 
 loggify.banner(`[emoji:star] I am some simple plain text to be printed`, { frame: { color: "green" } });
 loggify.banner({

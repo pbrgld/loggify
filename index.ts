@@ -14,10 +14,13 @@ import type { LogType, LogConsoleOptions, LogLevel, LogTypeBadge, GrafanaLoki, G
  * Todo section
  */
 //TODO: Prepare everything to make everything v1.0.0 ready
+//TODO: GrafanaLoki: overwrite mapping - when using logType suqareRed, add an option to create a mapping that shows the emoji as logType but writes another value to GrafanaLoki e.g. server error, could be an object {squareRed:'server error',...}
+//TODO: GrafanaLoki: Remove LogLevel when none <- check if possible
+//TODO: GrafanaLoki: Merge warn and warning to warning - one tag only
+//TODO: Constructor: implement default ANSI default color&style 
 //TODO: [WIP]: Banner
 //TODO: [WIP]: Banner, add space for description - 1 chart between description and frame
 //TODO: [WIP]: Banner: extract ansi-style&code started and start with it in next line, if an [ansi:reset] had not been thrown
-
 
 /**
  * Console class
@@ -636,6 +639,9 @@ export default class Loggify {
         let frameLineDescription: string | undefined = undefined;
         let descriptionLines: Array<string> = [];
         let descriptionContent;
+        if (!options) options = {};
+        if (!options.frame) options.frame = {};
+        if (!options.frame.color) options.frame.color = 'brightWhite';
 
         // Frame elements
         const frameTop: string = this.replaceAnsi(`[ansi:${options?.frame?.color}]╒${'═'.repeat(currentWidth - 2)}╕[ansi:reset]`);
