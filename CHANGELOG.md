@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.5.1] – 2025-08-15
+
+### 🐛 Fixed
+
+- Banner did not use a default color and caused an ansi replace issue, when no frame color was set
+
+---
+
 ## [0.5.0] – 2025-08-01
 
 ### ✨ Added
