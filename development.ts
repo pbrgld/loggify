@@ -8,8 +8,8 @@ import Loggify from "./index";
 const loggify: Loggify = new Loggify({
     logTypeBadge: 'emoji',
     logMemoryUsage: false,
-    logCallerInformation: true
-
+    logCallerInformation: true,
+    grafanaLoki: { hostname: '192.168.4.100', port: 3100, isSecure: false, labels: { app: 'loggify' }, logTypeMapping: { circleBlack: 'schwarz' } }
 });
 
 // Emoji Test
@@ -107,3 +107,14 @@ loggify.banner({
     \t2. that
     \t3. and that
 Finally there is some additional line break to be added\nOther things may come equally. And now we need to fill in a really long text to make sure the linebreak feature is correctly implemented. Well, in the end it should look great, or? What do you think this will look like, [ansi:yellow]if you do not put in any effort to make this a nice and neat looking feature? Well, in the end this is mostly done for myself, but hey, I am the most important person to bring this joy of using Loggify to and I am very happy for every other person to use it as well, but I [ansi:reset]have to like and love it. If someone reads this, this is just some silly text to implement the line break feature [emoji:smiley]` }, { frame: { color: "red" } });
+
+loggify.console(`This is a test using [ansi:gray][ansi:inverse]none[ansi:reset] as logType`, 'none');
+loggify.console(`This is a test using [ansi:gray][ansi:inverse]empty[ansi:reset] as logType`);
+
+loggify.console(undefined);
+loggify.console(null);
+loggify.console(112);
+loggify.console(99.90);
+loggify.console(true);
+loggify.console(false);
+loggify.console(() => { });

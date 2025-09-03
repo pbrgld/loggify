@@ -14,9 +14,9 @@ import type { LogType, LogConsoleOptions, LogLevel, LogTypeBadge, GrafanaLoki, G
  * Todo section
  */
 //TODO: Prepare everything to make everything v1.0.0 ready
-//TODO: GrafanaLoki: overwrite mapping - when using logType suqareRed, add an option to create a mapping that shows the emoji as logType but writes another value to GrafanaLoki e.g. server error, could be an object {squareRed:'server error',...}
-//TODO: GrafanaLoki: Remove LogLevel when none <- check if possible
-//TODO: GrafanaLoki: Merge warn and warning to warning - one tag only
+//TODO: Document -> GrafanaLoki: overwrite mapping - when using logType suqareRed, add an option to create a mapping that shows the emoji as logType but writes another value to GrafanaLoki e.g. server error, could be an object {squareRed:'server error',...}
+//TODO: Document as info -> GrafanaLoki: Remove LogLevel when none <- check if possible
+//TODO: Document as info -> GrafanaLoki: Merge warn and warning to warning - one tag only
 //TODO: Constructor: implement default ANSI default color&style 
 //TODO: [WIP]: Banner
 //TODO: [WIP]: Banner, add space for description - 1 chart between description and frame
@@ -303,6 +303,22 @@ export default class Loggify {
         //° Note: keys defined on function level will overwrite keys on app level
         const stream: any = { ...appLabels, ...labels };
 
+        // Manipulate level values in stream
+        if ('level' in stream) {
+            // Overwrite keys based on logTypeMapping
+            for (const [key, value] of Object.entries(this.grafanaLoki.logTypeMapping || {})) {
+                if (stream.level === key) {
+                    stream.level = value;
+                }
+            }
+
+            // Merge warn and warning to warning
+            if (stream.level === 'warn') stream.level = 'warning';
+
+            // Remove level when none and undefined
+            if (stream.level === 'none' || stream.level === undefined) delete stream.level;
+        }
+
         // Find host reference to this and replace with hostname
         if (stream?.host === 'this') {
             const ip = Object.values(os.networkInterfaces()).flat().find(i => i?.family === 'IPv4' && !i.internal)?.address;
@@ -363,7 +379,7 @@ export default class Loggify {
      * @param {Object} object Along with the message provide an object to be displayed within the output 
      * @param {Object} options Set of options to be applied to the output (e.g. timestamp: true) 
      */
-    console(message?: string | object | number, type?: LogType, options?: LogConsoleOptions, object?: any) {
+    console(message?: any, type?: LogType, options?: LogConsoleOptions, object?: any) {
         // Log level control
         if (this.logLevel == 'off' && options?.logLevel != 'off') return false;
         if (this.logLevel == 'minimal' && options?.logLevel != 'off' && options?.logLevel != 'minimal') return false;
@@ -377,17 +393,28 @@ export default class Loggify {
         let memory: string = '';
 
         // Auto-Handle Object as a message and check message for a string
-        if (typeof message === 'object') {
+        if (message === null) message = '[ansi:blue][ansi:italic]null[ansi:reset]';
+        else if (typeof message === 'object') {
             object = message;
             message = 'Found object in message => object:';
         }
-        else if (typeof message === 'number') message = `${message}`;
+        else if (typeof message === 'number') message = `[ansi:yellow]${message}[ansi:reset]`;
+        else if (typeof message === 'undefined') {
+            message = '[ansi:gray][ansi:italic]undefined[ansi:reset]';
+        }
+        else if (typeof message === 'boolean') {
+            if (message === true) message = '[ansi:magenta][ansi:italic]true[ansi:reset]';
+            else message = '[ansi:magenta][ansi:italic]false[ansi:reset]';
+        }
         else if (typeof message !== 'string') {
             message = `Invalid data type [ansi:red]"${typeof message}"[ansi:reset] for message! Must be either string, number or object`;
             type = 'error';
             if (options) options.logLevel = 'off';
             else options = { logLevel: 'off' };
         }
+
+
+
 
         /** Check for context and initialize if needed */
         if (contextId) {
@@ -664,8 +691,14 @@ export default class Loggify {
 
             // Iterate through description lines
             for (const line of descriptionLines) {
-                if (frameLineDescription) frameLineDescription = `${frameLineDescription}\n${this.replaceAnsi(`[ansi:${options?.frame?.color}]│[ansi:reset] ${this.padEndAnsiSafe(line, currentWidth - 4)} [ansi:${options?.frame?.color}]│[ansi:reset]`)}`;
-                else frameLineDescription = `${this.replaceAnsi(`[ansi:${options?.frame?.color}]│[ansi:reset] ${this.padEndAnsiSafe(line, currentWidth - 4)} [ansi:${options?.frame?.color}]│[ansi:reset]`)}`;
+                // Following line
+                if (frameLineDescription) {
+                    frameLineDescription = `${frameLineDescription}\n${this.replaceAnsi(`[ansi:${options?.frame?.color}]│[ansi:reset] ${this.padEndAnsiSafe(line, currentWidth - 4)} [ansi:${options?.frame?.color}]│[ansi:reset]`)}`;
+                }
+                // First line
+                else {
+                    frameLineDescription = `${this.replaceAnsi(`[ansi:${options?.frame?.color}]│[ansi:reset] ${this.padEndAnsiSafe(line, currentWidth - 4)} [ansi:${options?.frame?.color}]│[ansi:reset]`)}`;
+                }
             }
         }
 
