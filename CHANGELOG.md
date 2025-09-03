@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.5.2] – 2025-09-03
+
+### ✨ Added
+
+- Added logType mapping when initializing Loggify letting you use logType emojis on console level and overwriting with what ever value in GrafanaLoki log level
+
+### 🧼 Improved
+
+- Added styling for logging when message values are undefined, null or number
+
+---
+
 ## [0.5.1] – 2025-08-15
 
 ### 🐛 Fixed

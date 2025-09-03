@@ -131,6 +131,9 @@ export interface ObjectSizeResponse {
     chars: number;
 }
 
+/** LogTypeMapping used e.g. for Grafana to overwrite LogTypes to desired vales */
+export type LogTypeMapping = Partial<Record<LogType, string>>;
+
 /** Grafana Loki Object */
 export interface GrafanaLoki {
     isSecure?: boolean;
@@ -157,6 +160,7 @@ export interface GrafanaLoki {
         buildDate?: string;
         goVersion?: string;
     }
+    logTypeMapping?: LogTypeMapping;
 }
 
 /** Auth Token  */
