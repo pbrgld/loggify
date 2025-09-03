@@ -402,6 +402,10 @@ export default class Loggify {
         else if (typeof message === 'undefined') {
             message = '[ansi:gray][ansi:italic]undefined[ansi:reset]';
         }
+        else if (typeof message === 'boolean') {
+            if (message === true) message = '[ansi:magenta][ansi:italic]true[ansi:reset]';
+            else message = '[ansi:magenta][ansi:italic]false[ansi:reset]';
+        }
         else if (typeof message !== 'string') {
             message = `Invalid data type [ansi:red]"${typeof message}"[ansi:reset] for message! Must be either string, number or object`;
             type = 'error';

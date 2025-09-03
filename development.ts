@@ -115,4 +115,6 @@ loggify.console(undefined);
 loggify.console(null);
 loggify.console(112);
 loggify.console(99.90);
+loggify.console(true);
+loggify.console(false);
 loggify.console(() => { });

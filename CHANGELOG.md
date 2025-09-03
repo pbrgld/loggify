@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.5.3] – 2025-09-03
+
+### 🧼 Improved
+
+- Added styling for logging when message values is boolean
+
+---
+
 ## [0.5.2] – 2025-09-03
 
 ### ✨ Added
