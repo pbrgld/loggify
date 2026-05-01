@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.5.4] – 2026-05-01
+
+### ✨ Added
+
+- Enhanced callerInformation options on console method to hide information for specific log line or force it when globally enabled or disabled
+- Added new feature on console method to render a badge that comes in quite handy if you want to show combind logging of services or namespaces in one console. Define label and set color and inverse to immitate badge look-like
+
 ## [0.5.3] – 2025-09-03
 
 ### 🧼 Improved

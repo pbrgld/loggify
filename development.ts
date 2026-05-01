@@ -7,7 +7,7 @@ import Loggify from "./index";
 // Initialize class
 const loggify: Loggify = new Loggify({
     logTypeBadge: 'emoji',
-    logMemoryUsage: false,
+    logMemoryUsage: true,
     logCallerInformation: true,
     grafanaLoki: { hostname: '192.168.4.100', port: 3100, isSecure: false, labels: { app: 'loggify' }, logTypeMapping: { circleBlack: 'schwarz' } }
 });
@@ -118,3 +118,9 @@ loggify.console(99.90);
 loggify.console(true);
 loggify.console(false);
 loggify.console(() => { });
+
+loggify.console('ErrorMessage & disabled caller information on console-level', 'error', { callerInformation: { hideCallerInformation: true } });
+loggify.console('ErrorMessage & force caller information on console-level', 'error', { callerInformation: { forceCallerInformation: true } });
+
+loggify.console('Logging with badge', 'connect', { badge: { label: 'badge', color: 'green', inverse: true } });
+loggify.console('Logging with badge but no caller information', 'connect', { badge: { label: 'badge', color: 'magenta', inverse: true }, callerInformation: { hideCallerInformation: true } });

@@ -44,8 +44,17 @@ export interface LogConsoleOptions {
 
     // Custom caller stack level
     callerInformation?: {
-        overwriteCallerStackLevel?: number;
+        hideCallerInformation?: boolean;
+        forceCallerInformation?: boolean;
         hideFunctionInfo?: boolean;
+        overwriteCallerStackLevel?: number;
+    }
+
+    // Badge
+    badge?: {
+        label: string;
+        color?: AnsiColorCodesOnlyDynamicTypes;
+        inverse?: boolean;
     }
 
     // Context
