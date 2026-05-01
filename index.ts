@@ -391,6 +391,7 @@ export default class Loggify {
         const contextColor: string = options?.context?.color || this.logBuffer.get(contextId)?.color || 'orange';
         let callerInformation: string | undefined = undefined;
         let memory: string = '';
+        let badge: string = '';
 
         // Auto-Handle Object as a message and check message for a string
         if (message === null) message = '[ansi:blue][ansi:italic]null[ansi:reset]';
@@ -412,9 +413,6 @@ export default class Loggify {
             if (options) options.logLevel = 'off';
             else options = { logLevel: 'off' };
         }
-
-
-
 
         /** Check for context and initialize if needed */
         if (contextId) {
@@ -528,7 +526,7 @@ export default class Loggify {
         }
 
         /** Caller information */
-        if (this.logCallerInformation) {
+        if (this.logCallerInformation || options?.callerInformation?.forceCallerInformation) {
             const location = this.getCallerLocation(options?.callerInformation?.overwriteCallerStackLevel || this.logCallerCallStackLevel); // Set the level how deep you want look-up the caller. usualy you would be looking for level 2 when initialized in each file and 3 when using a global or one-instance approach
             //* Caller information found
             if (location) {
@@ -541,11 +539,19 @@ export default class Loggify {
             //° Caller information disabled
         } else callerInformation = '';
 
+        //§ Disable caller information on line/log level - not in general
+        if (options?.callerInformation?.hideCallerInformation) callerInformation = '';
+
         /** Memory usage */
         if (this.logMemory) {
             // Get memory usage
             const { heapUsed, heapTotal, rss } = process.memoryUsage();
             memory = this.replaceAnsi(`[ansi:gray][[ansi:reset][ansi:cyan]${(heapUsed / 1024 / 1024).toFixed(2)}MB[ansi:reset][ansi:gray] of [ansi:reset][ansi:brightBlue]${(heapTotal / 1024 / 1024).toFixed(2)}MB[ansi:reset][ansi:gray]|[ansi:reset][ansi:white]${(rss / 1024 / 1024).toFixed(2)}MB[ansi:reset][ansi:gray]][ansi:reset] `);
+        }
+
+        /** Badge */
+        if (options?.badge?.label) {
+            badge = this.replaceAnsi(`${options.badge.color ? `[ansi:${options.badge.color}]` : ''}${options.badge.inverse ? '[ansi:inverse] ' : ''}${options.badge?.label}${options.badge.inverse ? ' ' : ''}[ansi:reset] `);
         }
 
         /** Render message to console */
@@ -577,11 +583,11 @@ export default class Loggify {
                 }
 
                 // Push to log buffer
-                this.logBuffer.get(contextId)!.logs.push(`${contextFrame}${typeTag}${timestamp}${memory}${callerInformation}${message}\n`);
+                this.logBuffer.get(contextId)!.logs.push(`${contextFrame}${typeTag}${timestamp}${memory}${badge}${callerInformation}${message}\n`);
             }
 
             // Send to standard output
-            else process.stdout.write(`${typeTag}${timestamp}${memory}${callerInformation}${message}\n`);
+            else process.stdout.write(`${typeTag}${timestamp}${memory}${badge}${callerInformation}${message}\n`);
         }
 
         /** Render object to console */
