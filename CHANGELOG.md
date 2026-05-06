@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.5.5] – 2026-05-06
+
+### 🐛 Fixed
+
+- Fixed an issue where getSizeObject when sending an object to console caused an unhandeled exception on circular objects
+
 ## [0.5.4] – 2026-05-01
 
 ### ✨ Added

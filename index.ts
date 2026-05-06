@@ -967,7 +967,7 @@ export default class Loggify {
         let bytes: number = 0;
         let chars: number = 0;
 
-        const objectStringified: string = JSON.stringify(obj);
+        const objectStringified: string = this.safeStringify(obj);
         const bytesUtf8 = Buffer.byteLength(objectStringified, 'utf8');
 
         // Determine size
@@ -1070,5 +1070,26 @@ export default class Loggify {
         }
 
         return lines;
+    }
+
+    /**
+     * Safe version of Stringify - Extends standard feature to ensure circular objects do not cause an unhandeled exception
+     * @param {unknown} value 
+     * @param {number} space 
+     * @returns 
+     */
+    public safeStringify(value: unknown, space = 2): string {
+        const seen = new WeakSet<object>();
+
+        return JSON.stringify(value, (key, val) => {
+            if (typeof val === "object" && val !== null) {
+                if (seen.has(val)) {
+                    return "[Circular]";
+                }
+                seen.add(val);
+            }
+
+            return val;
+        }, space);
     }
 }
