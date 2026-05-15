@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.5.6] – 2026-05-15
+
+### ✨ Added
+
+- You can now get the current log level that your instnace of loggify is set to
+
 ## [0.5.5] – 2026-05-06
 
 ### 🐛 Fixed

@@ -77,6 +77,13 @@ export default class Loggify {
         this.console(`╰─── Log memory usage: [ansi:magenta]${this.logMemory}[ansi:reset]`, undefined, { logLevel: 'off', callerInformation: { overwriteCallerStackLevel: this.logCallerCallStackLevel + 2 } });
     }
 
+    /**
+     * Get current log level
+     */
+    public get currentLogLevel(): string {
+        return this.logLevel;
+    }
+
     /** Method to set/change the log level */
     setLogLevel(logLevel: LogLevel) {
         // Save current log level
